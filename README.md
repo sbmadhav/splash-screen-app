@@ -81,6 +81,100 @@ A customizable splash-screen experience built with Next.js, designed for focus s
    pnpm start
    ```
 
+## Testing
+
+The project includes a comprehensive unit test suite covering all components, API routes, custom hooks, and integration scenarios.
+
+### Running Tests
+
+```bash
+# Run all tests once
+pnpm test
+
+# Run tests in watch mode (for development)
+pnpm test:watch
+
+# Run tests with coverage report
+pnpm test:coverage
+
+# Run tests for CI/CD pipelines
+pnpm test:ci
+```
+
+### Test Structure
+
+```
+__tests__/
+├── components/              # Component unit tests
+│   ├── text-display.test.tsx
+│   ├── timer-display.test.tsx
+│   ├── background-image.test.tsx
+│   ├── music-player.test.tsx
+│   └── audio-visualizer.test.tsx
+├── api/                     # API route tests
+│   ├── random-image.test.ts
+│   └── env-vars.test.ts
+├── hooks/                   # Custom hook tests
+│   └── use-background-image-enhanced.test.ts
+├── lib/                     # Utility function tests
+│   └── utils.test.ts
+└── integration/             # Full page integration tests
+    ├── settings-page.test.tsx
+    └── home-page.test.tsx
+```
+
+### Test Coverage
+
+The test suite covers:
+- ✅ **Component Rendering** - All UI components render correctly
+- ✅ **User Interactions** - Button clicks, form inputs, file uploads
+- ✅ **State Management** - localStorage persistence and synchronization
+- ✅ **Timer Functionality** - Countdown logic, pause/resume, completion events
+- ✅ **Audio Features** - Music playback, visualizer, Web Audio API integration
+- ✅ **Background Images** - API calls, caching, fallback mechanisms
+- ✅ **Theme Switching** - Light/dark mode transitions
+- ✅ **Settings Persistence** - Configuration saving and loading
+- ✅ **API Endpoints** - External service integration and error handling
+- ✅ **Mobile Responsiveness** - Screen size adaptations
+- ✅ **Error Handling** - Graceful degradation and fallbacks
+
+### Testing Framework
+
+- **Jest** - Test runner and assertion library
+- **React Testing Library** - Component testing utilities
+- **jsdom** - Browser environment simulation
+- **Custom Mocks** - Web Audio API, localStorage, fetch, Next.js navigation
+
+### Writing Tests
+
+When contributing new features, please include tests:
+
+1. **Component Tests** - Test rendering, props, and user interactions
+2. **Hook Tests** - Test custom hook logic and side effects
+3. **API Tests** - Test endpoints with various scenarios and error conditions
+4. **Integration Tests** - Test complete user workflows
+
+Example test structure:
+```typescript
+describe('ComponentName', () => {
+  beforeEach(() => {
+    // Setup mocks and localStorage
+  })
+
+  it('renders correctly with default props', () => {
+    // Test basic rendering
+  })
+
+  it('handles user interactions', () => {
+    // Test clicks, inputs, etc.
+  })
+
+  it('manages state correctly', () => {
+    // Test state changes and persistence
+  })
+})
+```
+
 ## Project Structure
 
 ```
