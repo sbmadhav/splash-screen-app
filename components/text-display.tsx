@@ -16,7 +16,7 @@ interface TimerState {
 }
 
 const defaultSettings = {
-  showText: true,
+  showText: false,
   textToShow: "We'll be starting soon!",
   enableHeadingAnimation: false,
   theme: 'system' as const,

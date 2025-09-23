@@ -11,7 +11,7 @@ interface MusicSettings {
 }
 
 const defaultSettings: MusicSettings = {
-  selectedMusic: "lofi-chill",
+  selectedMusic: "just-relax",
   theme: 'system',
 }
 

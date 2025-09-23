@@ -10,7 +10,7 @@ describe('MusicPlayer', () => {
   beforeEach(() => {
     localStorage.clear()
     localStorage.setItem('appSettings', JSON.stringify({
-      selectedMusic: 'lofi-chill',
+      selectedMusic: 'just-relax',
       theme: 'dark',
     }))
   })

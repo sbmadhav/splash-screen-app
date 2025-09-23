@@ -47,14 +47,14 @@ const musicOptions = [
 
 const defaultSettings: AppSettings = {
   showLogo: false,
-  showText: true,
+  showText: false,
   textToShow: "We'll be starting soon!",
   showTimer: true,
   timerMinutes: 5,
   hideHeaderWhenFinished: false,
   timerTitle: "Focus time",
   enableHeadingAnimation: false,
-  selectedMusic: "lofi-chill",
+  selectedMusic: "just-relax",
   useCustomImage: false,
   customImageUrl: "",
   useCustomLogo: false,

@@ -21,10 +21,11 @@ describe('Home Page Integration', () => {
     localStorage.clear()
     localStorage.setItem('appSettings', JSON.stringify({
       showLogo: false,
-      showText: true,
+      showText: false,
       textToShow: "We'll be starting soon!",
       showTimer: true,
       theme: 'dark',
+      selectedMusic: 'just-relax',
     }))
   })
 
@@ -32,8 +33,8 @@ describe('Home Page Integration', () => {
     render(<HomePage />)
 
     await waitFor(() => {
-      // Text should be displayed
-      expect(screen.getByText("We'll be starting soon!")).toBeInTheDocument()
+      // Text should NOT be displayed by default (showText is false)
+      expect(screen.queryByText("We'll be starting soon!")).not.toBeInTheDocument()
       
       // Settings link should be present (empty link from output)
       expect(screen.getByRole('link', { name: '' })).toBeInTheDocument()
@@ -85,8 +86,8 @@ describe('Home Page Integration', () => {
 
     render(<HomePage />)
 
-    // Since the mock shows the component still renders normally even in loading state,
-    // let's just check that the page renders without crashing
-    expect(screen.getByText("We'll be starting soon!")).toBeInTheDocument()
+    // Since text is hidden by default (showText: false), let's check for a different element
+    // that should always be present, like the refresh button
+    expect(screen.getByRole('button', { name: /refresh background image/i })).toBeInTheDocument()
   })
 })

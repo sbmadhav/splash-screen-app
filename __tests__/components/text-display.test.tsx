@@ -16,7 +16,7 @@ describe('TextDisplay', () => {
     
     // Mock default settings
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify({
-      showText: true,
+      showText: false,
       textToShow: "We'll be starting soon!",
       enableHeadingAnimation: false,
       theme: 'system',
@@ -25,24 +25,24 @@ describe('TextDisplay', () => {
     }))
   })
 
-  it('renders text when showText is true', async () => {
+  it('does not render text when showText is false (default)', async () => {
     render(<TextDisplay />)
     
     await waitFor(() => {
-      expect(screen.getByText("We'll be starting soon!")).toBeInTheDocument()
+      expect(screen.queryByText("We'll be starting soon!")).not.toBeInTheDocument()
     })
   })
 
-  it('does not render text when showText is false', async () => {
+  it('renders text when showText is true', async () => {
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify({
-      showText: false,
+      showText: true,
       textToShow: "We'll be starting soon!",
     }))
 
     render(<TextDisplay />)
     
     await waitFor(() => {
-      expect(screen.queryByText("We'll be starting soon!")).not.toBeInTheDocument()
+      expect(screen.getByText("We'll be starting soon!")).toBeInTheDocument()
     })
   })
 

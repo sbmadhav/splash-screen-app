@@ -13,16 +13,27 @@ describe('Settings Page Integration', () => {
     localStorage.clear()
     localStorage.setItem('appSettings', JSON.stringify({
       showLogo: false,
-      showText: true,
+      showText: false,
       textToShow: "We'll be starting soon!",
       showTimer: true,
       timerMinutes: 5,
-      selectedMusic: 'lofi-chill',
+      selectedMusic: 'just-relax',
       theme: 'system',
     }))
   })
 
   it('loads and displays current settings', async () => {
+    // Update localStorage to have showText: true so we can see the text input
+    localStorage.setItem('appSettings', JSON.stringify({
+      showLogo: false,
+      showText: true,
+      textToShow: "We'll be starting soon!",
+      showTimer: true,
+      timerMinutes: 5,
+      selectedMusic: 'just-relax',
+      theme: 'system',
+    }))
+
     render(<SettingsPage />)
 
     await waitFor(() => {
@@ -32,6 +43,17 @@ describe('Settings Page Integration', () => {
   })
 
   it('saves settings changes', async () => {
+    // First enable showText so we can interact with the text input
+    localStorage.setItem('appSettings', JSON.stringify({
+      showLogo: false,
+      showText: true,
+      textToShow: "We'll be starting soon!",
+      showTimer: true,
+      timerMinutes: 5,
+      selectedMusic: 'just-relax',
+      theme: 'system',
+    }))
+
     render(<SettingsPage />)
 
     // Change text setting
