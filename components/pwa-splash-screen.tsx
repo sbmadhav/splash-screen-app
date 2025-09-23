@@ -22,8 +22,16 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
         if ('serviceWorker' in navigator) {
           setStatus("Registering service worker...")
           
+          // Use different path for GitHub Pages vs local development
+          // Check if we're running in the /splash-screen-app/ subdirectory
+          const isGitHubPages = window.location.hostname.includes('github.io') || 
+                               window.location.pathname.startsWith('/splash-screen-app/')
+          const swPath = process.env.NODE_ENV === 'production' && isGitHubPages
+            ? '/splash-screen-app/sw.js' 
+            : '/sw.js'
+          
           // Register service worker
-          const registration = await navigator.serviceWorker.register('/sw.js')
+          const registration = await navigator.serviceWorker.register(swPath)
           console.log('[PWA] Service worker registered:', registration)
           
           setProgress(10)
@@ -126,7 +134,7 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
         <div className="mb-8 flex justify-center">
           <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-2xl">
             <img 
-              src="/icon-64x64.png" 
+              src="./icon-64x64.png" 
               alt="App Icon" 
               className="w-16 h-16"
               onError={(e) => {

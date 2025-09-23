@@ -151,7 +151,7 @@ export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'da
                       </div>
                     ) : (
                       <img
-                        src={`/background/${image.name}`}
+                        src={`./background/${image.name}`}
                         alt={image.title}
                         className="w-full h-full object-cover"
                         loading="lazy"

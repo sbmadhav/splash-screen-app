@@ -38,8 +38,15 @@ const getTimeKeywords = (timeOfDay: string): string[] => {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const usedImages = searchParams.get("usedImages")?.split(",") || []
+    // Handle searchParams safely for static generation
+    let usedImages: string[] = []
+    try {
+      const { searchParams } = new URL(request.url)
+      usedImages = searchParams.get("usedImages")?.split(",") || []
+    } catch (error) {
+      // Fallback for static generation
+      usedImages = []
+    }
 
     const season = getCurrentSeason()
     const timeOfDay = getTimeOfDay()

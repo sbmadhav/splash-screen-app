@@ -95,7 +95,7 @@ export function MobileInfoButton({ imageData }: MobileInfoButtonProps) {
   useEffect(() => {
     if (!isSmallScreen) return
 
-    const audioUrl = `/music/${settings.selectedMusic}.mp3`
+    const audioUrl = `./music/${settings.selectedMusic}.mp3`
     const audio = new Audio(audioUrl)
     audio.loop = true
     audio.volume = 0.5

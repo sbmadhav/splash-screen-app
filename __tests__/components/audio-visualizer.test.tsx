@@ -3,7 +3,7 @@ import { AudioVisualizer } from '@/components/audio-visualizer'
 
 describe('AudioVisualizer', () => {
   const mockProps = {
-    audioUrl: '/music/test.mp3',
+    audioUrl: './music/test.mp3',
     isPlaying: false,
     onPlayStateChange: jest.fn(),
   }

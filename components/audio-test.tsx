@@ -7,9 +7,9 @@ export function AudioTest() {
 
   const testAudio = async () => {
     const testUrls = [
-      '/music/lofi-chill.mp3',
-      '/music/just-relax.mp3',
-      '/music/cinematic-chillhop.mp3'
+      './music/lofi-chill.mp3',
+      './music/just-relax.mp3',
+      './music/cinematic-chillhop.mp3'
     ]
 
     for (const url of testUrls) {
@@ -26,7 +26,7 @@ export function AudioTest() {
   const playTestAudio = async () => {
     if (audioRef.current) {
       try {
-        audioRef.current.src = '/music/lofi-chill.mp3'
+        audioRef.current.src = './music/lofi-chill.mp3'
         await audioRef.current.play()
         console.log('Test audio playing!')
       } catch (error) {

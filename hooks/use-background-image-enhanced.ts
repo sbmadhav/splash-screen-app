@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { shouldUseLocalImages, getBasePath } from "@/lib/static-utils"
 import type { ImageData } from "@/types/image"
 
 interface AppSettings {
@@ -108,8 +109,9 @@ export function useBackgroundImage() {
       return getRandomLocalImage()
     }
 
+    const basePath = getBasePath()
     return {
-      url: `/background/${selectedImage.name}`,
+      url: `${basePath}/background/${selectedImage.name}`,
       title: selectedImage.title,
       location: selectedImage.location,
       copyright: "Local Image",
@@ -128,8 +130,9 @@ export function useBackgroundImage() {
       ? availableImages[Math.floor(Math.random() * availableImages.length)]
       : LOCAL_BACKGROUND_IMAGES[Math.floor(Math.random() * LOCAL_BACKGROUND_IMAGES.length)]
 
+    const basePath = getBasePath()
     return {
-      url: `/background/${selectedImage.name}`,
+      url: `${basePath}/background/${selectedImage.name}`,
       title: selectedImage.title,
       location: selectedImage.location,
       copyright: "Local Image",
@@ -141,6 +144,12 @@ export function useBackgroundImage() {
   // Fetch random image from API
   const fetchRandomImage = async (usedImages: string[]): Promise<ImageData> => {
     console.log("[v0] Fetching random image from server API, used images:", usedImages.length)
+
+    // Skip API calls in static environments (like GitHub Pages)
+    if (shouldUseLocalImages()) {
+      console.log("[v0] Static environment detected, using local fallback image")
+      return getRandomLocalImage(usedImages)
+    }
 
     try {
       const response = await fetch(`/api/random-image?usedImages=${usedImages.join(",")}`)

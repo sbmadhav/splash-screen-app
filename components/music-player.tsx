@@ -72,20 +72,20 @@ export function MusicPlayer() {
           
           // Set audio URL based on selected music
           if (newSettings.selectedMusic) {
-            const audioUrl = `/music/${newSettings.selectedMusic}.mp3`
+            const audioUrl = `./music/${newSettings.selectedMusic}.mp3`
             console.log('[MusicPlayer] Setting audio URL:', audioUrl)
             setCurrentAudioUrl(audioUrl)
           }
         } else {
           // Use default settings if no saved settings
-          const audioUrl = `/music/${defaultSettings.selectedMusic}.mp3`
+          const audioUrl = `./music/${defaultSettings.selectedMusic}.mp3`
           console.log('[MusicPlayer] Using default audio URL:', audioUrl)
           setCurrentAudioUrl(audioUrl)
         }
       } catch (error) {
         console.error("[MusicPlayer] Failed to load music settings:", error)
         // Fallback to default
-        const audioUrl = `/music/${defaultSettings.selectedMusic}.mp3`
+        const audioUrl = `./music/${defaultSettings.selectedMusic}.mp3`
         setCurrentAudioUrl(audioUrl)
       }
     }
@@ -110,7 +110,7 @@ export function MusicPlayer() {
       
       // Update audio URL if music selection changed
       if (newSelectedMusic !== currentSelectedMusic) {
-        const audioUrl = `/music/${newSelectedMusic}.mp3`
+        const audioUrl = `./music/${newSelectedMusic}.mp3`
         console.log('[MusicPlayer] Updating audio URL from settings:', audioUrl)
         setCurrentAudioUrl(audioUrl)
         setIsPlaying(false) // Stop current music when changing
