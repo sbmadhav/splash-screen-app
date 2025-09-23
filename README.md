@@ -1,5 +1,14 @@
 # Splash Screen App
 
+[![Next.js](https://img.shields.io/badge/Next.js-14.2.16-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.9-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Jest](https://img.shields.io/badge/Jest-29.7.0-C21325?style=flat&logo=jest&logoColor=white)](https://jestjs.io/)
+[![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com/)
+
 A customizable splash-screen experience built with Next.js, designed for focus sessions, relaxation, meetings, or events. Features dynamic backgrounds, ambient music with audio visualization, countdown timers, and comprehensive offline support.
 
 ## Features
