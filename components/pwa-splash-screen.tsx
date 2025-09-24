@@ -35,33 +35,46 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
           console.log('[PWA] Service worker registered:', registration)
           
           setProgress(10)
-          setStatus("Downloading assets...")
+          setStatus("Caching core assets...")
           
-          // Monitor cache progress
+          // Simplified progress monitoring - less dependent on service worker communication
+          let currentProgress = 10
           progressInterval = setInterval(async () => {
             try {
-              const channel = new MessageChannel()
+              // Try to get cache status but don't rely on it
+              let targetProgress = currentProgress + 8
               
-              const cacheStatus = await new Promise((resolve) => {
-                channel.port1.onmessage = (event) => {
-                  resolve(event.data)
-                }
-                
-                if (navigator.serviceWorker.controller) {
-                  navigator.serviceWorker.controller.postMessage(
-                    { type: 'GET_CACHE_STATUS' },
-                    [channel.port2]
-                  )
-                } else {
-                  // Fallback progress simulation
-                  resolve({ progress: Math.min(progress + 5, 90) })
-                }
-              })
+              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                try {
+                  const channel = new MessageChannel()
+                  const timeout = new Promise((resolve) => {
+                    setTimeout(() => resolve({ progress: targetProgress }), 200)
+                  })
+                  
+                  const cacheStatusPromise = new Promise((resolve) => {
+                    channel.port1.onmessage = (event) => {
+                      resolve(event.data)
+                    }
+                    
+                    navigator.serviceWorker.controller!.postMessage(
+                      { type: 'GET_CACHE_STATUS' },
+                      [channel.port2]
+                    )
+                  })
 
-              const newProgress = Math.max(10, (cacheStatus as any).progress || progress + 2)
-              setProgress(newProgress)
+                  const cacheStatus = await Promise.race([cacheStatusPromise, timeout])
+                  if (cacheStatus && (cacheStatus as any).progress) {
+                    targetProgress = Math.max(targetProgress, (cacheStatus as any).progress)
+                  }
+                } catch (error) {
+                  console.log('[PWA] Service worker communication failed, using fallback progress')
+                }
+              }
               
-              if (newProgress >= 90) {
+              currentProgress = Math.min(targetProgress, 90)
+              setProgress(currentProgress)
+              
+              if (currentProgress >= 90) {
                 setStatus("Preparing app...")
                 clearInterval(progressInterval)
                 
@@ -73,18 +86,19 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
                   setTimeout(() => {
                     onComplete()
                   }, 500)
-                }, 1000)
-              } else if (newProgress > 50) {
-                setStatus("Caching background images...")
-              } else if (newProgress > 20) {
-                setStatus("Downloading music files...")
+                }, 800)
+              } else if (currentProgress > 50) {
+                setStatus("Setting up lazy caching...")
+              } else if (currentProgress > 20) {
+                setStatus("Caching core assets...")
               }
             } catch (error) {
-              console.error('[PWA] Error checking cache status:', error)
-              // Continue with simulated progress
-              setProgress(prev => Math.min(prev + 3, 90))
+              console.error('[PWA] Error in progress monitoring:', error)
+              // Fallback to simple increment
+              currentProgress = Math.min(currentProgress + 10, 90)
+              setProgress(currentProgress)
             }
-          }, 500)
+          }, 400)
         } else {
           // No service worker support - simulate loading
           setStatus("Loading app...")

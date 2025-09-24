@@ -62,7 +62,7 @@ export function useBackgroundImage() {
     }
   }
 
-  // Cache image in localStorage as base64
+  // Cache image in localStorage as base64 (optional, service worker provides primary caching)
   const cacheImage = async (url: string): Promise<string> => {
     try {
       const cacheKey = `cached_image_${btoa(url)}`
@@ -73,15 +73,21 @@ export function useBackgroundImage() {
         return cached
       }
 
-      // Fetch and cache the image
+      // For GitHub Pages, rely on service worker caching instead of localStorage
+      if (shouldUseLocalImages()) {
+        console.log("[Cache] Using service worker cache instead of localStorage on GitHub Pages")
+        return url
+      }
+
+      // Fetch and cache the image (only in development)
       const response = await fetch(url)
       if (!response.ok) throw new Error('Failed to fetch image')
       
       const blob = await response.blob()
       
-      // Convert to base64 with size limit (5MB)
-      if (blob.size > 5 * 1024 * 1024) {
-        console.warn("[Cache] Image too large to cache:", url)
+      // Convert to base64 with size limit (2MB for localStorage efficiency)
+      if (blob.size > 2 * 1024 * 1024) {
+        console.warn("[Cache] Image too large for localStorage cache:", url)
         return url
       }
       
@@ -93,7 +99,7 @@ export function useBackgroundImage() {
       })
 
       localStorage.setItem(cacheKey, base64)
-      console.log("[Cache] Image cached successfully:", url)
+      console.log("[Cache] Image cached in localStorage:", url)
       return base64
     } catch (error) {
       console.error("[Cache] Error caching image:", error)

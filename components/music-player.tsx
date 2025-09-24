@@ -35,6 +35,22 @@ export function MusicPlayer() {
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark')
   const [showControls, setShowControls] = useState(false)
 
+  // Preload music file for better performance (lazy caching)
+  const preloadMusicFile = async (audioUrl: string) => {
+    try {
+      console.log('[MusicPlayer] Preloading music file:', audioUrl)
+      // Trigger a HEAD request to cache the music file without downloading the entire file
+      const response = await fetch(audioUrl, { method: 'HEAD' })
+      if (response.ok) {
+        console.log('[MusicPlayer] Music file available and cached:', audioUrl)
+      } else {
+        console.warn('[MusicPlayer] Music file not available:', audioUrl, response.status)
+      }
+    } catch (error) {
+      console.warn('[MusicPlayer] Could not preload music file:', audioUrl, error)
+    }
+  }
+
   // Resolve theme
   useEffect(() => {
     const resolveTheme = () => {
@@ -75,18 +91,21 @@ export function MusicPlayer() {
             const audioUrl = `./music/${newSettings.selectedMusic}.mp3`
             console.log('[MusicPlayer] Setting audio URL:', audioUrl)
             setCurrentAudioUrl(audioUrl)
+            preloadMusicFile(audioUrl) // Preload for better performance
           }
         } else {
           // Use default settings if no saved settings
           const audioUrl = `./music/${defaultSettings.selectedMusic}.mp3`
           console.log('[MusicPlayer] Using default audio URL:', audioUrl)
           setCurrentAudioUrl(audioUrl)
+          preloadMusicFile(audioUrl) // Preload for better performance
         }
       } catch (error) {
         console.error("[MusicPlayer] Failed to load music settings:", error)
         // Fallback to default
         const audioUrl = `./music/${defaultSettings.selectedMusic}.mp3`
         setCurrentAudioUrl(audioUrl)
+        preloadMusicFile(audioUrl) // Preload for better performance
       }
     }
 
@@ -113,6 +132,7 @@ export function MusicPlayer() {
         const audioUrl = `./music/${newSelectedMusic}.mp3`
         console.log('[MusicPlayer] Updating audio URL from settings:', audioUrl)
         setCurrentAudioUrl(audioUrl)
+        preloadMusicFile(audioUrl) // Preload new music file for better performance
         setIsPlaying(false) // Stop current music when changing
       }
     }

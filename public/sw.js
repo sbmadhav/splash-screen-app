@@ -2,7 +2,7 @@ const CACHE_NAME = 'splash-app-v1';
 const STATIC_CACHE = 'splash-app-static-v1';
 const DYNAMIC_CACHE = 'splash-app-dynamic-v1';
 
-// Assets to cache immediately
+// Assets to cache immediately (core assets only)
 const STATIC_ASSETS = [
   '/',
   '/settings',
@@ -15,8 +15,11 @@ const STATIC_ASSETS = [
   './icon-128x128.png',
   './icon-256x256.png',
   './icon-512x512.png',
-  './favicon.ico',
-  // Music files
+  './favicon.ico'
+];
+
+// Music files to cache on-demand (lazy loading)
+const MUSIC_FILES = [
   './music/cinematic-chillhop.mp3',
   './music/dreams.mp3',
   './music/forest-lullaby.mp3',
@@ -28,7 +31,7 @@ const STATIC_ASSETS = [
   './music/rainbow-after-rain.mp3'
 ];
 
-// Background images to cache
+// Background images to cache on-demand (lazy loading)
 const BACKGROUND_IMAGES = [
   './background/Beach-Summer.jpg',
   './background/Beach-Summer2.jpg',
@@ -53,27 +56,20 @@ const BACKGROUND_IMAGES = [
   './background/Mountain-Winter2.jpg'
 ];
 
-// Install event - cache static assets
+// Install event - cache only core static assets (not music or background images)
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
   
   event.waitUntil(
-    Promise.all([
-      // Cache static assets
-      caches.open(STATIC_CACHE).then((cache) => {
-        console.log('[SW] Caching static assets...');
-        return cache.addAll(STATIC_ASSETS);
-      }),
-      // Cache background images
-      caches.open(CACHE_NAME).then((cache) => {
-        console.log('[SW] Caching background images...');
-        return cache.addAll(BACKGROUND_IMAGES);
-      })
-    ]).then(() => {
-      console.log('[SW] Assets cached successfully');
+    // Only cache core static assets on install - music and background images will be cached on-demand
+    caches.open(STATIC_CACHE).then((cache) => {
+      console.log('[SW] Caching core static assets...');
+      return cache.addAll(STATIC_ASSETS);
+    }).then(() => {
+      console.log('[SW] Core static assets cached successfully. Music and background images will be cached on-demand.');
       self.skipWaiting();
     }).catch((error) => {
-      console.error('[SW] Failed to cache assets:', error);
+      console.error('[SW] Failed to cache static assets:', error);
     })
   );
 });
@@ -127,7 +123,7 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Cache first strategy - improved for offline
+// Cache first strategy - improved for offline with music and background image prioritization
 async function cacheFirstStrategy(request) {
   try {
     const cacheNames = [CACHE_NAME, STATIC_CACHE];
@@ -151,6 +147,16 @@ async function cacheFirstStrategy(request) {
       if (networkResponse.ok) {
         // Cache network response for future use
         const cache = await caches.open(CACHE_NAME);
+        
+        // Log caching of different asset types
+        if (request.url.includes('/music/')) {
+          console.log('[SW] Caching music file for future use:', request.url);
+        } else if (request.url.includes('/background/') || 
+                   request.url.includes('unsplash.com') || 
+                   request.url.includes('picsum.photos')) {
+          console.log('[SW] Caching background image for future use:', request.url);
+        }
+        
         cache.put(request, networkResponse.clone());
         console.log('[SW] Cached network response:', request.url);
       }
@@ -160,16 +166,34 @@ async function cacheFirstStrategy(request) {
       // Offline and not in cache
       console.log('[SW] OFFLINE: Request not in cache:', request.url);
       
-      // For music files, try to serve a fallback or throw an error
+      // For music files, check if any other music is cached as fallback
       if (request.url.includes('/music/')) {
-        throw new Error(`Music file not available offline: ${request.url}`);
+        const fallbackCache = await caches.open(CACHE_NAME);
+        // Try to find any cached music file as fallback
+        for (const musicFile of MUSIC_FILES) {
+          const fallback = await fallbackCache.match(musicFile);
+          if (fallback) {
+            console.log('[SW] Serving fallback music file:', musicFile);
+            return fallback;
+          }
+        }
+        // If no music is cached, return an error response
+        return new Response('Music not available offline', { 
+          status: 404, 
+          statusText: 'Music file not cached for offline use' 
+        });
       }
       
-      // For images, try to serve a fallback
+      // For external images, try to serve a fallback local image
       if (request.url.includes('unsplash') || request.url.includes('picsum')) {
-        const fallbackImages = await caches.match('/background/Mountain-Summer.jpg');
-        if (fallbackImages) {
-          return fallbackImages;
+        const fallbackCache = await caches.open(CACHE_NAME);
+        // Try to find any cached local background image as fallback
+        for (const bgImage of BACKGROUND_IMAGES) {
+          const fallback = await fallbackCache.match(bgImage);
+          if (fallback) {
+            console.log('[SW] Serving fallback background image:', bgImage);
+            return fallback;
+          }
         }
       }
       
@@ -217,16 +241,15 @@ self.addEventListener('message', (event) => {
 
 // Get cache status for progress reporting
 async function getCacheStatus() {
-  const totalAssets = STATIC_ASSETS.length + BACKGROUND_IMAGES.length;
+  // Only check for core static assets that are actually cached upfront
+  const totalAssets = STATIC_ASSETS.length;
   let cachedAssets = 0;
   
-  const cache = await caches.open(CACHE_NAME);
   const staticCache = await caches.open(STATIC_CACHE);
   
-  const allRequests = [...STATIC_ASSETS, ...BACKGROUND_IMAGES];
-  
-  for (const asset of allRequests) {
-    const cached = await cache.match(asset) || await staticCache.match(asset);
+  // Only check static assets since background images and music are cached on-demand
+  for (const asset of STATIC_ASSETS) {
+    const cached = await staticCache.match(asset);
     if (cached) {
       cachedAssets++;
     }
