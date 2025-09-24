@@ -6,6 +6,12 @@ global.HTMLAudioElement.prototype.play = jest.fn().mockResolvedValue(undefined)
 global.HTMLAudioElement.prototype.pause = jest.fn()
 global.HTMLAudioElement.prototype.load = jest.fn()
 
+// Mock fetch for preloading functionality
+global.fetch = jest.fn().mockResolvedValue({
+  ok: true,
+  status: 200,
+})
+
 describe('MusicPlayer', () => {
   beforeEach(() => {
     localStorage.clear()
@@ -13,6 +19,7 @@ describe('MusicPlayer', () => {
       selectedMusic: 'just-relax',
       theme: 'dark',
     }))
+    jest.clearAllMocks()
   })
 
   it('renders music player on large screens', () => {
@@ -26,6 +33,55 @@ describe('MusicPlayer', () => {
     render(<MusicPlayer />)
     
     expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument()
+  })
+
+  it('preloads music file on initial render', async () => {
+    render(<MusicPlayer />)
+    
+    // Wait for component to initialize and preload music
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('./music/just-relax.mp3', { method: 'HEAD' })
+    })
+  })
+
+  it('preloads new music when selection changes', async () => {
+    render(<MusicPlayer />)
+    
+    // Simulate settings change event
+    const newSettings = {
+      selectedMusic: 'lofi-chill',
+      theme: 'dark',
+    }
+    
+    // Clear previous fetch calls
+    jest.clearAllMocks()
+    
+    fireEvent(window, new CustomEvent('settingsChanged', {
+      detail: newSettings
+    }))
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('./music/lofi-chill.mp3', { method: 'HEAD' })
+    })
+  })
+
+  it('handles preload errors gracefully', async () => {
+    // Mock fetch to fail
+    global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
+    
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+    
+    render(<MusicPlayer />)
+    
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Could not preload music file'),
+        expect.any(String),
+        expect.any(Error)
+      )
+    })
+    
+    consoleSpy.mockRestore()
   })
 
   it('starts playing music when play button is clicked', async () => {

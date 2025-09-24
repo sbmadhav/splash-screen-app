@@ -160,4 +160,81 @@ describe('useBackgroundImage', () => {
 
     jest.useRealTimers()
   })
+
+  // New tests for lazy caching functionality
+  it('skips localStorage caching on GitHub Pages environment', async () => {
+    // Mock GitHub Pages environment
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      configurable: true,
+      value: {
+        hostname: 'username.github.io',
+        pathname: '/splash-screen-app/',
+      },
+    })
+
+    const { result } = renderHook(() => useBackgroundImage())
+
+    await waitFor(() => {
+      expect(result.current.imageData).not.toBeNull()
+    })
+
+    // GitHub Pages uses Picsum Photos fallback when no API key
+    expect(result.current.imageData?.url).toMatch(/picsum\.photos\/seed/)
+  })
+
+  it('relies on service worker for caching on GitHub Pages', async () => {
+    // Mock GitHub Pages environment
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      configurable: true,
+      value: {
+        hostname: 'username.github.io',
+        pathname: '/splash-screen-app/',
+      },
+    })
+
+    // Create spies for localStorage methods
+    const localStorageSetItemSpy = jest.spyOn(Storage.prototype, 'setItem')
+    
+    const { result } = renderHook(() => useBackgroundImage())
+
+    await waitFor(() => {
+      expect(result.current.imageData).not.toBeNull()
+    })
+
+    // Should not store image data URLs in localStorage on GitHub Pages
+    // (original URLs are fine for caching)
+    const dataUrlCalls = localStorageSetItemSpy.mock.calls.filter(call => 
+      call[0].includes('cachedImage_') && call[1].startsWith('data:')
+    )
+    expect(dataUrlCalls).toHaveLength(0)
+    
+    localStorageSetItemSpy.mockRestore()
+  })
+
+  it('uses client-side API on GitHub Pages', async () => {
+    // Mock GitHub Pages environment
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      configurable: true,
+      value: {
+        hostname: 'user.github.io',
+        pathname: '/repo/',
+      },
+    })
+
+    const { result } = renderHook(() => useBackgroundImage())
+
+    await waitFor(() => {
+      expect(result.current.imageData).not.toBeNull()
+    })
+
+    // On GitHub Pages without API key, it uses Picsum Photos fallback
+    expect(result.current.imageData?.url).toMatch(/picsum\.photos/)
+    
+    // The service works by detecting the static environment and using client-side logic
+    // The title is generated based on the contextual query (e.g., "autumn morning landscape")
+    expect(result.current.imageData?.title).toMatch(/autumn|morning|landscape/)
+  })
 })

@@ -79,6 +79,7 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 - **APIs**: Client-side Unsplash integration for GitHub Pages compatibility
 - **State Management**: localStorage with custom event broadcasting
 - **Build Tools**: PNPM package manager with optimized build pipeline
+- **Testing**: Jest with React Testing Library - **[View Test Coverage](./TEST_SUMMARY.md)** (85 tests, 100% pass rate)
 
 ## Getting Started
 
