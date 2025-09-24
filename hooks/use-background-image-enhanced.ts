@@ -145,10 +145,16 @@ export function useBackgroundImage() {
   const fetchRandomImage = async (usedImages: string[]): Promise<ImageData> => {
     console.log("[v0] Fetching random image from server API, used images:", usedImages.length)
 
-    // Skip API calls in static environments (like GitHub Pages)
-    if (shouldUseLocalImages()) {
-      console.log("[v0] Static environment detected, using local fallback image")
-      return getRandomLocalImage(usedImages)
+    // Only skip API calls if we're truly in a static environment (like GitHub Pages)
+    // Don't skip for regular production builds that still have API support
+    const shouldUseLocal = shouldUseLocalImages()
+    console.log("[v0] Should use local images?", shouldUseLocal)
+    
+    if (shouldUseLocal) {
+      console.log("[v0] Static environment detected (GitHub Pages), using client-side Unsplash API")
+      // Import the client-side Unsplash function
+      const { fetchUnsplashImage } = await import("@/lib/unsplash-client")
+      return await fetchUnsplashImage(usedImages)
     }
 
     try {
@@ -174,7 +180,7 @@ export function useBackgroundImage() {
     }
 
     // If offline or API failed, use local image
-    console.log("[v0] Using local fallback image")
+    console.log("[v0] API unavailable, using local fallback image")
     return getRandomLocalImage(usedImages)
   }
 

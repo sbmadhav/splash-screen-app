@@ -7,12 +7,19 @@ export const isStaticEnvironment = () => {
            // Or if running from file:// protocol
            window.location.protocol === 'file:'
   }
-  // Server-side: check for build-time static generation
-  return process.env.GITHUB_PAGES === 'true' || process.env.NODE_ENV === 'production'
+  // Server-side: check for build-time static generation specifically for GitHub Pages
+  return process.env.GITHUB_PAGES === 'true'
 }
 
 export const shouldUseLocalImages = () => {
-  return isStaticEnvironment()
+  const staticEnv = isStaticEnvironment()
+  console.log('[static-utils] shouldUseLocalImages check:', {
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'server-side',
+    protocol: typeof window !== 'undefined' ? window.location.protocol : 'server-side',
+    GITHUB_PAGES: process.env.GITHUB_PAGES,
+    staticEnv
+  })
+  return staticEnv
 }
 
 // Get the correct base path for assets in GitHub Pages

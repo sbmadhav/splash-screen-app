@@ -71,11 +71,15 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 
 2. **Set up environment variables** (optional)
    ```bash
-   cp .env.local.example .env.local
+   cp .env.example .env.local
    ```
    Add your Unsplash API key for enhanced background variety:
    ```
+   # For development (server-side)
    UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
+   
+   # For GitHub Pages deployment (client-side)
+   NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
    ```
 
 3. **Start development server**
@@ -228,7 +232,8 @@ Access comprehensive customization options:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `UNSPLASH_ACCESS_KEY` | Enables high-quality seasonal backgrounds | No |
+| `UNSPLASH_ACCESS_KEY` | Enables high-quality seasonal backgrounds (development) | No |
+| `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` | Enables Unsplash API for GitHub Pages (client-side) | No |
 | `NEXT_PUBLIC_VERCEL_URL` | Deployment URL for production builds | No |
 
 Without the Unsplash key, the app gracefully falls back to Picsum photos and the offline image library.
@@ -239,6 +244,45 @@ Without the Unsplash key, the app gracefully falls back to Picsum photos and the
 ```bash
 vercel --prod
 ```
+
+### GitHub Pages
+For GitHub Pages deployment with Unsplash API support:
+
+1. **Set up repository secrets** (optional, for Unsplash API):
+   - Go to your repository Settings → Secrets and variables → Actions
+   - Add `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` with your Unsplash access key
+
+2. **Build and deploy**:
+   ```bash
+   ./build-github.sh
+   ```
+
+3. **GitHub Actions** (automated deployment):
+   Create `.github/workflows/deploy.yml`:
+   ```yaml
+   name: Deploy to GitHub Pages
+   on:
+     push:
+       branches: [ main ]
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-node@v4
+           with:
+             node-version: '18'
+             cache: 'npm'
+         - run: npm ci
+         - run: ./build-github.sh
+           env:
+             NEXT_PUBLIC_UNSPLASH_ACCESS_KEY: ${{ secrets.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY }}
+         - uses: actions/deploy-pages@v3
+           with:
+             path: out/splash-screen-app
+   ```
+
+**Note**: GitHub Pages only serves static files, so the Unsplash API calls are made directly from the browser. Without the API key, the app gracefully falls back to alternative image sources.
 
 ### Docker
 ```bash
