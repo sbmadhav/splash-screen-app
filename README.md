@@ -87,6 +87,15 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 - Node.js 18+ 
 - PNPM (recommended) or npm
 
+## 🔐 Security
+
+For secure API key management and deployment practices, see our detailed [Security Guide](docs/SECURITY.md).
+
+**Quick Setup for GitHub Pages:**
+1. Add `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` as a GitHub repository secret
+2. The GitHub Actions workflow will automatically use it during deployment
+3. Never commit API keys to version control
+
 ### Installation
 
 1. **Clone and install dependencies**
