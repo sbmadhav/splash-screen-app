@@ -60,7 +60,7 @@ const defaultSettings: AppSettings = {
   useCustomLogo: false,
   customLogoUrl: "",
   theme: 'system',
-  offlineImageMode: false,
+  offlineImageMode: true, // Default to true for offline images
   selectedOfflineImage: undefined,
 }
 
