@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { debugLog } from "@/lib/debug-utils"
 
 interface AudioVisualizerProps {
   audioUrl?: string
@@ -33,7 +34,7 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
 
   // Debug prop changes
   useEffect(() => {
-    console.log('[AudioVisualizer] Props changed:', { audioUrl, isPlaying })
+    debugLog('[AudioVisualizer] Props changed:', { audioUrl, isPlaying })
   }, [audioUrl, isPlaying])
 
   // Handle isPlaying prop changes
@@ -41,11 +42,11 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
     const handlePlayStateChange = async () => {
       const audio = audioRef.current
       if (!audio || !audioUrl) {
-        console.log('[AudioVisualizer] No audio element or URL, skipping play state change')
+        debugLog('[AudioVisualizer] No audio element or URL, skipping play state change')
         return
       }
 
-      console.log('[AudioVisualizer] Play state prop changed to:', isPlaying)
+      debugLog('[AudioVisualizer] Play state prop changed to:', isPlaying)
 
       try {
         if (isPlaying) {
@@ -69,7 +70,40 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
             })
           }
 
-          console.log('[AudioVisualizer] Starting audio playback...')
+          if (isPlaying) {
+          // Initialize if needed
+          if (!isInitialized) {
+            debugLog('[AudioVisualizer] Initializing audio for prop change...')
+            await initAudio()
+          }
+
+          // Resume context if suspended
+          if (audioContextRef.current?.state === 'suspended') {
+            debugLog('[AudioVisualizer] Resuming suspended audio context...')
+            await audioContextRef.current.resume()
+          }
+
+          // Ensure audio is ready
+          if (audio.readyState < 2) {
+            debugLog('[AudioVisualizer] Waiting for audio to be ready...')
+            await new Promise((resolve) => {
+              audio.addEventListener('canplay', resolve, { once: true })
+            })
+          }
+
+          debugLog('[AudioVisualizer] Starting audio playback...')
+          await audio.play()
+          debugLog('[AudioVisualizer] Audio.play() completed, starting draw loop...')
+          draw()
+          debugLog('[AudioVisualizer] Draw function called')
+        } else {
+          debugLog('[AudioVisualizer] Pausing audio...')
+          audio.pause()
+          if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current)
+            debugLog('[AudioVisualizer] Animation cancelled')
+          }
+        }
           await audio.play()
           console.log('[AudioVisualizer] Audio.play() completed, starting draw loop...')
           draw()
@@ -98,7 +132,7 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
     const updateCanvasSize = () => {
       canvas.width = window.innerWidth
       canvas.height = window.innerHeight
-      console.log('[AudioVisualizer] Canvas size updated:', canvas.width, 'x', canvas.height)
+      debugLog('[AudioVisualizer] Canvas size updated:', canvas.width, 'x', canvas.height)
     }
     
     updateCanvasSize()
@@ -114,11 +148,11 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
     if (!audioRef.current || isInitialized) return
 
     try {
-      console.log('Initializing audio context...')
+      debugLog('Initializing audio context...')
       
       // Create audio context
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
-      console.log('Audio context created, state:', audioContextRef.current.state)
+      debugLog('Audio context created, state:', audioContextRef.current.state)
       
       // Create analyser
       analyserRef.current = audioContextRef.current.createAnalyser()
@@ -130,11 +164,11 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
         sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
         sourceRef.current.connect(analyserRef.current)
         analyserRef.current.connect(audioContextRef.current.destination)
-        console.log('Audio nodes connected')
+        debugLog('Audio nodes connected')
       }
-      
+
       setIsInitialized(true)
-      console.log('Audio initialization complete')
+      debugLog('Audio initialization complete')
     } catch (error) {
       console.error('Error initializing audio context:', error)
     }
@@ -222,24 +256,22 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
     const analyser = analyserRef.current
     
     if (!canvas || !analyser) {
-      console.log('[AudioVisualizer] Draw skipped - missing canvas or analyser:', { canvas: !!canvas, analyser: !!analyser })
-      return
-    }
-    
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      console.log('[AudioVisualizer] Draw skipped - no context')
+      debugLog('[AudioVisualizer] Draw skipped - missing canvas or analyser:', { canvas: !!canvas, analyser: !!analyser })
       return
     }
 
-    // Debug: log every 60 frames (about once per second at 60fps)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      debugLog('[AudioVisualizer] Draw skipped - no context')
+      return
+    }    // Debug: log every 60 frames (about once per second at 60fps)
     if (!drawFrameCountRef.current) {
       drawFrameCountRef.current = 0
     }
     drawFrameCountRef.current++
     
     if (drawFrameCountRef.current % 60 === 0) {
-      console.log('[AudioVisualizer] Draw loop running, frame:', drawFrameCountRef.current)
+      debugLog('[AudioVisualizer] Draw loop running, frame:', drawFrameCountRef.current)
     }
     
     // Get audio data
@@ -262,7 +294,7 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
     
     // Debug amplitude every 60 frames
     if (drawFrameCountRef.current % 60 === 0) {
-      console.log('[AudioVisualizer] Current amplitude:', amplitude)
+      debugLog('[AudioVisualizer] Current amplitude:', amplitude)
     }
     
     // Clear canvas without covering background
@@ -347,12 +379,12 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
     try {
       // Initialize audio context if needed
       if (!isInitialized) {
-        console.log('Initializing audio before play...')
+        debugLog('Initializing audio before play...')
         await initAudio()
       }
 
       if (isPlaying) {
-        console.log('Pausing audio...')
+        debugLog('Pausing audio...')
         audio.pause()
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current)
@@ -361,15 +393,15 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
       } else {
         // Resume audio context if suspended
         if (audioContextRef.current?.state === 'suspended') {
-          console.log('Resuming suspended audio context...')
+          debugLog('Resuming suspended audio context...')
           await audioContextRef.current.resume()
         }
 
-        console.log('Attempting to play audio...', audio.src)
+        debugLog('Attempting to play audio...', audio.src)
         
         // Check if audio has data
         if (audio.readyState < 2) {
-          console.log('Audio not ready, waiting...')
+          debugLog('Audio not ready, waiting...')
           audio.load()
           await new Promise((resolve) => {
             audio.addEventListener('canplay', resolve, { once: true })
@@ -377,7 +409,7 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
         }
 
         await audio.play()
-        console.log('Audio playing successfully')
+        debugLog('Audio playing successfully')
         draw()
         onPlayStateChange?.(true)
       }
@@ -385,9 +417,9 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
       console.error('Error in togglePlay:', error)
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
-          console.log('Audio play blocked by browser - user interaction required')
+          debugLog('Audio play blocked by browser - user interaction required')
         } else if (error.name === 'NotSupportedError') {
-          console.log('Audio format not supported')
+          debugLog('Audio format not supported')
         }
       }
     }
@@ -423,7 +455,7 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
       
       // Add event listeners
       const handleCanPlay = () => {
-        console.log('✅ Audio can play:', audioUrl)
+        debugLog('✅ Audio can play:', audioUrl)
       }
       
       const handleError = (e: Event) => {
@@ -431,15 +463,15 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
       }
       
       const handleLoadStart = () => {
-        console.log('🔄 Audio load started:', audioUrl)
+        debugLog('🔄 Audio load started:', audioUrl)
       }
       
       const handleLoadedData = () => {
-        console.log('📦 Audio data loaded:', audioUrl)
+        debugLog('📦 Audio data loaded:', audioUrl)
       }
       
       const handleLoadedMetadata = () => {
-        console.log('📋 Audio metadata loaded:', audioUrl, 'Duration:', audio.duration)
+        debugLog('📋 Audio metadata loaded:', audioUrl, 'Duration:', audio.duration)
       }
       
       audio.addEventListener('canplay', handleCanPlay)
@@ -448,7 +480,7 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
       audio.addEventListener('loadeddata', handleLoadedData)
       audio.addEventListener('loadedmetadata', handleLoadedMetadata)
       
-      console.log('🎵 Setting audio source:', audioUrl)
+      debugLog('🎵 Setting audio source:', audioUrl)
       audio.src = audioUrl
       audio.load() // Force reload
       

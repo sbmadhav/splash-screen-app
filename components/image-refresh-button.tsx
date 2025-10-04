@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { debugLog } from "@/lib/debug-utils"
 
 interface ImageRefreshButtonProps {
   onRefresh: () => void
@@ -42,7 +43,7 @@ export function ImageRefreshButton({ onRefresh, isTransitioning = false }: Image
           setResolvedTheme(appTheme)
         }
         
-        console.log('[ImageRefreshButton] Theme resolved:', appTheme, '->', resolvedTheme)
+        debugLog('[ImageRefreshButton] Theme resolved:', appTheme, '->', resolvedTheme)
       } catch (error) {
         console.error("Failed to load settings:", error)
         // Fallback to system theme

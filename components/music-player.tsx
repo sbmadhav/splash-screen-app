@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { AudioVisualizer } from "./audio-visualizer"
 import { Play, Pause, Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { debugLog } from "@/lib/debug-utils"
 
 interface MusicSettings {
   selectedMusic: string
@@ -38,11 +39,11 @@ export function MusicPlayer() {
   // Preload music file for better performance (lazy caching)
   const preloadMusicFile = async (audioUrl: string) => {
     try {
-      console.log('[MusicPlayer] Preloading music file:', audioUrl)
+      debugLog('[MusicPlayer] Preloading music file:', audioUrl)
       // Trigger a HEAD request to cache the music file without downloading the entire file
       const response = await fetch(audioUrl, { method: 'HEAD' })
       if (response.ok) {
-        console.log('[MusicPlayer] Music file available and cached:', audioUrl)
+        debugLog('[MusicPlayer] Music file available and cached:', audioUrl)
       } else {
         console.warn('[MusicPlayer] Music file not available:', audioUrl, response.status)
       }
@@ -73,7 +74,7 @@ export function MusicPlayer() {
 
   // Load settings from localStorage
   useEffect(() => {
-    console.log('[MusicPlayer] Component mounted, loading settings...')
+    debugLog('[MusicPlayer] Component mounted, loading settings...')
     
     const loadSettings = () => {
       try {
@@ -89,14 +90,14 @@ export function MusicPlayer() {
           // Set audio URL based on selected music
           if (newSettings.selectedMusic) {
             const audioUrl = `./music/${newSettings.selectedMusic}.mp3`
-            console.log('[MusicPlayer] Setting audio URL:', audioUrl)
+            debugLog('[MusicPlayer] Setting audio URL:', audioUrl)
             setCurrentAudioUrl(audioUrl)
             preloadMusicFile(audioUrl) // Preload for better performance
           }
         } else {
           // Use default settings if no saved settings
           const audioUrl = `./music/${defaultSettings.selectedMusic}.mp3`
-          console.log('[MusicPlayer] Using default audio URL:', audioUrl)
+          debugLog('[MusicPlayer] Using default audio URL:', audioUrl)
           setCurrentAudioUrl(audioUrl)
           preloadMusicFile(audioUrl) // Preload for better performance
         }
@@ -119,7 +120,7 @@ export function MusicPlayer() {
         selectedMusic: newSettings.selectedMusic ?? defaultSettings.selectedMusic,
         theme: newSettings.theme ?? defaultSettings.theme,
       }
-      console.log('[MusicPlayer] Settings updated:', musicSettings)
+      debugLog('[MusicPlayer] Settings updated:', musicSettings)
       
       // Check if music changed before updating settings
       const currentSelectedMusic = settings.selectedMusic
@@ -130,7 +131,7 @@ export function MusicPlayer() {
       // Update audio URL if music selection changed
       if (newSelectedMusic !== currentSelectedMusic) {
         const audioUrl = `./music/${newSelectedMusic}.mp3`
-        console.log('[MusicPlayer] Updating audio URL from settings:', audioUrl)
+        debugLog('[MusicPlayer] Updating audio URL from settings:', audioUrl)
         setCurrentAudioUrl(audioUrl)
         preloadMusicFile(audioUrl) // Preload new music file for better performance
         setIsPlaying(false) // Stop current music when changing
@@ -141,22 +142,22 @@ export function MusicPlayer() {
     
     // Listen for timer events and sync music playback
     const handleTimerStarted = () => {
-      console.log('[MusicPlayer] Timer started - starting music')
+      debugLog('[MusicPlayer] Timer started - starting music')
       setIsPlaying(true)
     }
     
     const handleTimerPaused = () => {
-      console.log('[MusicPlayer] Timer paused - pausing music') 
+      debugLog('[MusicPlayer] Timer paused - pausing music') 
       setIsPlaying(false)
     }
     
     const handleTimerReset = () => {
-      console.log('[MusicPlayer] Timer reset - stopping music')
+      debugLog('[MusicPlayer] Timer reset - stopping music')
       setIsPlaying(false)
     }
     
     const handleTimerFinished = () => {
-      console.log('[MusicPlayer] Timer finished - stopping music')
+      debugLog('[MusicPlayer] Timer finished - stopping music')
       setIsPlaying(false)
     }
     
@@ -176,7 +177,7 @@ export function MusicPlayer() {
 
   // Debug state changes
   useEffect(() => {
-    console.log('[MusicPlayer] State changed:', {
+    debugLog('[MusicPlayer] State changed:', {
       currentAudioUrl,
       isPlaying,
       isMuted,
@@ -187,10 +188,10 @@ export function MusicPlayer() {
 
   const togglePlay = () => {
     const newIsPlaying = !isPlaying
-    console.log('[MusicPlayer] Toggle play clicked')
-    console.log('[MusicPlayer] Current state:', isPlaying, '-> New state:', newIsPlaying)
-    console.log('[MusicPlayer] Current audio URL:', currentAudioUrl)
-    console.log('[MusicPlayer] Will pass to AudioVisualizer:', newIsPlaying && !isMuted)
+    debugLog('[MusicPlayer] Toggle play clicked')
+    debugLog('[MusicPlayer] Current state:', isPlaying, '-> New state:', newIsPlaying)
+    debugLog('[MusicPlayer] Current audio URL:', currentAudioUrl)
+    debugLog('[MusicPlayer] Will pass to AudioVisualizer:', newIsPlaying && !isMuted)
     setIsPlaying(newIsPlaying)
     
     // Dispatch events so timer can sync with music player
@@ -202,7 +203,7 @@ export function MusicPlayer() {
   }
 
   const toggleMute = () => {
-    console.log('[MusicPlayer] Toggle mute clicked, current state:', isMuted)
+    debugLog('[MusicPlayer] Toggle mute clicked, current state:', isMuted)
     setIsMuted(!isMuted)
   }
 
@@ -223,7 +224,7 @@ export function MusicPlayer() {
         audioUrl={currentAudioUrl}
         isPlaying={isPlaying && !isMuted}
         onPlayStateChange={(playing) => {
-          console.log('[MusicPlayer] Audio visualizer play state changed:', playing)
+          debugLog('[MusicPlayer] Audio visualizer play state changed:', playing)
           setIsPlaying(playing)
         }}
       />

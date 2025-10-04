@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { PWASplashScreen } from "@/components/pwa-splash-screen"
+import { debugLog } from "@/lib/debug-utils"
 
 const SPLASH_COMPLETED_KEY = 'splash-screen-completed'
 const SESSION_STORAGE_KEY = 'splash-session-id'
@@ -44,7 +45,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       navigator.serviceWorker
         .register(swPath)
         .then((registration) => {
-          console.log('[PWA] Service worker registered:', registration)
+          debugLog('[PWA] Service worker registered:', registration)
         })
         .catch((error) => {
           console.error('[PWA] Service worker registration failed:', error)

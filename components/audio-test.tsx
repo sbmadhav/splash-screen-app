@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useEffect } from "react"
+import { debugLog } from "@/lib/debug-utils"
 
 export function AudioTest() {
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -13,10 +14,10 @@ export function AudioTest() {
     ]
 
     for (const url of testUrls) {
-      console.log(`Testing audio URL: ${url}`)
+      debugLog(`Testing audio URL: ${url}`)
       try {
         const response = await fetch(url, { method: 'HEAD' })
-        console.log(`${url} - Status: ${response.status} - ${response.ok ? '✅' : '❌'}`)
+        debugLog(`${url} - Status: ${response.status} - ${response.ok ? '✅' : '❌'}`)
       } catch (error) {
         console.error(`${url} - Error:`, error)
       }
@@ -28,7 +29,7 @@ export function AudioTest() {
       try {
         audioRef.current.src = './music/lofi-chill.mp3'
         await audioRef.current.play()
-        console.log('Test audio playing!')
+        debugLog('Test audio playing!')
       } catch (error) {
         console.error('Test audio failed:', error)
       }

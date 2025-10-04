@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Play, Pause, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { debugLog } from "@/lib/debug-utils"
 
 interface TimerSettings {
   showTimer: boolean
@@ -103,14 +104,14 @@ export function TimerDisplay() {
     
     // Listen for music player events to sync timer state
     const handleMusicStarted = () => {
-      console.log('[Timer] Music started - starting timer if it has time')
+      debugLog('[Timer] Music started - starting timer if it has time')
       if (timeLeft > 0 && !isFinished) {
         setIsRunning(true)
       }
     }
     
     const handleMusicPaused = () => {
-      console.log('[Timer] Music paused - pausing timer')
+      debugLog('[Timer] Music paused - pausing timer')
       setIsRunning(false)
     }
     

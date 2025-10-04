@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Download, Smartphone, Monitor } from "lucide-react"
+import { debugLog } from "@/lib/debug-utils"
 
 interface PWAInstallPromptProps {
   theme?: 'light' | 'dark'
@@ -41,14 +42,14 @@ export function PWAInstallPrompt({ theme = 'dark' }: PWAInstallPromptProps) {
       setDeferredPrompt(e)
       setIsInstallable(true)
       setHasCheckedCapability(true)
-      console.log('[PWA] Install prompt available')
+      debugLog('[PWA] Install prompt available')
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
     // Handle app installed
     const handleAppInstalled = () => {
-      console.log('[PWA] App was installed')
+      debugLog('[PWA] App was installed')
       setIsInstalled(true)
       setIsInstallable(false)
       setDeferredPrompt(null)
@@ -72,7 +73,7 @@ export function PWAInstallPrompt({ theme = 'dark' }: PWAInstallPromptProps) {
           // These are good signs that PWA installation should be possible
           // but if we haven't received the beforeinstallprompt event,
           // we might be in a browser that supports it but hasn't triggered it yet
-          console.log('[PWA] PWA installation may be available, but prompt not triggered yet')
+          debugLog('[PWA] PWA installation may be available, but prompt not triggered yet')
           setIsInstallable(true) // Show the install option anyway
         }
       }
@@ -93,7 +94,7 @@ export function PWAInstallPrompt({ theme = 'dark' }: PWAInstallPromptProps) {
         
         // Wait for the user to respond to the prompt
         const { outcome } = await deferredPrompt.userChoice
-        console.log(`[PWA] User response to the install prompt: ${outcome}`)
+        debugLog(`[PWA] User response to the install prompt: ${outcome}`)
         
         if (outcome === 'accepted') {
           setIsInstallable(false)
@@ -106,7 +107,7 @@ export function PWAInstallPrompt({ theme = 'dark' }: PWAInstallPromptProps) {
       }
     } else {
       // If no deferred prompt, provide manual installation instructions
-      console.log('[PWA] No deferred prompt available, showing manual instructions')
+      debugLog('[PWA] No deferred prompt available, showing manual instructions')
       
       // Check browser type and provide appropriate instructions
       const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
