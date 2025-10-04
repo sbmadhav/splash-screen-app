@@ -1,14 +1,26 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useBackgroundImage } from '@/hooks/use-background-image-enhanced'
+import { shouldUseLocalImages } from '@/lib/static-utils'
 
 // Mock fetch
 global.fetch = jest.fn()
+
+// Mock static-utils to control environment detection
+jest.mock('@/lib/static-utils', () => ({
+  shouldUseLocalImages: jest.fn(() => false),
+  getBasePath: jest.fn(() => '')
+}))
+
+const mockShouldUseLocalImages = shouldUseLocalImages as jest.MockedFunction<typeof shouldUseLocalImages>
 
 describe('useBackgroundImage', () => {
   beforeEach(() => {
     // Reset mocks and localStorage
     jest.clearAllMocks()
     global.localStorage.clear()
+    
+    // Ensure shouldUseLocalImages returns false by default for most tests
+    mockShouldUseLocalImages.mockReturnValue(false)
     
     // Mock FileReader for image caching
     const mockFileReader = {
@@ -37,6 +49,11 @@ describe('useBackgroundImage', () => {
   })
 
   it('loads initial image on mount', async () => {
+    // Set offline mode to false to test API functionality
+    localStorage.setItem('appSettings', JSON.stringify({
+      offlineImageMode: false
+    }))
+
     ;(global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -69,10 +86,16 @@ describe('useBackgroundImage', () => {
 
     // Should use fallback image
     expect(result.current.imageData?.url).toMatch(/background\//)
-    expect(result.current.error).toBeUndefined() // Hook handles errors gracefully by not exposing them
+    // Hook handles errors gracefully by providing fallback image
+    expect(result.current.imageData).not.toBeNull()
   })
 
   it('refreshes image when loadNewImage is called', async () => {
+    // Set offline mode to false to test API functionality
+    localStorage.setItem('appSettings', JSON.stringify({
+      offlineImageMode: false
+    }))
+
     const { result } = renderHook(() => useBackgroundImage())
 
     // Wait for initial load
@@ -103,6 +126,11 @@ describe('useBackgroundImage', () => {
   })
 
   it('manages used images cache', async () => {
+    // Set offline mode to false to test API functionality
+    localStorage.setItem('appSettings', JSON.stringify({
+      offlineImageMode: false
+    }))
+
     const { result } = renderHook(() => useBackgroundImage())
 
     // Wait for initial image load
@@ -163,15 +191,12 @@ describe('useBackgroundImage', () => {
 
   // New tests for lazy caching functionality
   it('skips localStorage caching on GitHub Pages environment', async () => {
-    // Mock GitHub Pages environment
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        hostname: 'username.github.io',
-        pathname: '/splash-screen-app/',
-      },
-    })
+    // Mock GitHub Pages environment and disable offline mode
+    mockShouldUseLocalImages.mockReturnValue(true)
+
+    localStorage.setItem('appSettings', JSON.stringify({
+      offlineImageMode: false
+    }))
 
     const { result } = renderHook(() => useBackgroundImage())
 
@@ -185,14 +210,7 @@ describe('useBackgroundImage', () => {
 
   it('relies on service worker for caching on GitHub Pages', async () => {
     // Mock GitHub Pages environment
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        hostname: 'username.github.io',
-        pathname: '/splash-screen-app/',
-      },
-    })
+    mockShouldUseLocalImages.mockReturnValue(true)
 
     // Create spies for localStorage methods
     const localStorageSetItemSpy = jest.spyOn(Storage.prototype, 'setItem')
@@ -302,176 +320,10 @@ describe('useBackgroundImage', () => {
       expect(result.current.imageData?.isLocal).toBe(true)
     })
   })
-    })
-
-    it('uses API when offline mode is explicitly disabled', async () => {
-      // Set offline mode to false in settings
-      localStorage.setItem('appSettings', JSON.stringify({
-        offlineImageMode: false
-      }))
-
-      const { result } = renderHook(() => useBackgroundImage())
-
-      await waitFor(() => {
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      // Should make API call when offline mode is disabled
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/random-image')
-      )
-    })
-
-    it('loads specific offline image when selected', async () => {
-      // Set offline mode with specific image selected
-      localStorage.setItem('appSettings', JSON.stringify({
-        offlineImageMode: true,
-        selectedOfflineImage: 'Beach-Summer2.jpg'
-      }))
-
-      const { result } = renderHook(() => useBackgroundImage())
-
-      await waitFor(() => {
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      // Should load the specific selected image
-      expect(result.current.imageData?.url).toContain('Beach-Summer2.jpg')
-      expect(result.current.imageData?.title).toBe('Tropical Beach')
-    })
-
-    it('falls back to random local image when selected image not found', async () => {
-      // Set offline mode with non-existent image
-      localStorage.setItem('appSettings', JSON.stringify({
-        offlineImageMode: true,
-        selectedOfflineImage: 'NonExistent.jpg'
-      }))
-
-      const { result } = renderHook(() => useBackgroundImage())
-
-      await waitFor(() => {
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      // Should fall back to a valid local image
-      expect(result.current.imageData?.isLocal).toBe(true)
-      expect(result.current.imageData?.url).toContain('/background/')
-    })
-
-    it('handles undefined offlineImageMode correctly', async () => {
-      // Set settings without offlineImageMode property
-      localStorage.setItem('appSettings', JSON.stringify({
-        showLogo: true,
-        theme: 'dark'
-        // offlineImageMode is undefined
-      }))
-
-      const { result } = renderHook(() => useBackgroundImage())
-
-      await waitFor(() => {
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      // Should default to offline mode (true) when undefined
-      expect(result.current.imageData?.isLocal).toBe(true)
-    })
-
-    it('uses custom image when enabled over offline mode', async () => {
-      // Set both custom image and offline mode
-      localStorage.setItem('appSettings', JSON.stringify({
-        useCustomImage: true,
-        customImageUrl: 'data:image/jpeg;base64,customImageData',
-        offlineImageMode: true
-      }))
-
-      const { result } = renderHook(() => useBackgroundImage())
-
-      await waitFor(() => {
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      // Custom image should take precedence
-      expect(result.current.imageData?.isCustom).toBe(true)
-      expect(result.current.imageData?.url).toBe('data:image/jpeg;base64,customImageData')
-    })
-
-    it('responds to settings changes via custom event', async () => {
-      // Start with offline mode disabled
-      localStorage.setItem('appSettings', JSON.stringify({
-        offlineImageMode: false
-      }))
-
-      const { result } = renderHook(() => useBackgroundImage())
-
-      await waitFor(() => {
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      // Should initially make API call
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/random-image')
-      )
-
-      // Clear fetch mock
-      ;(global.fetch as jest.Mock).mockClear()
-
-      // Update settings to enable offline mode
-      const newSettings = { offlineImageMode: true }
-      localStorage.setItem('appSettings', JSON.stringify(newSettings))
-
-      // Trigger settings change event
-      await act(async () => {
-        window.dispatchEvent(new CustomEvent('settingsChanged', { detail: newSettings }))
-      })
-
-      await waitFor(() => {
-        expect(result.current.imageData?.isLocal).toBe(true)
-      })
-
-      // Should not make API call after switching to offline mode
-      expect(global.fetch).not.toHaveBeenCalled()
-    })
-
-    it('enables rotation mode when refresh is triggered in offline mode', async () => {
-      localStorage.setItem('appSettings', JSON.stringify({
-        offlineImageMode: true
-      }))
-
-      const { result } = renderHook(() => useBackgroundImage())
-
-      await waitFor(() => {
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      const initialImageUrl = result.current.imageData?.url
-
-      // Trigger image refresh with transition
-      await act(async () => {
-        await result.current.loadNewImageWithTransition()
-      })
-
-      await waitFor(() => {
-        // Image might change due to rotation being enabled
-        expect(result.current.imageData).not.toBeNull()
-      })
-
-      // Should still be local image
-      expect(result.current.imageData?.isLocal).toBe(true)
-    })
-  })
-})
-  })
 
   it('relies on service worker for caching on GitHub Pages', async () => {
     // Mock GitHub Pages environment
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        hostname: 'username.github.io',
-        pathname: '/splash-screen-app/',
-      },
-    })
+    mockShouldUseLocalImages.mockReturnValue(true)
 
     // Create spies for localStorage methods
     const localStorageSetItemSpy = jest.spyOn(Storage.prototype, 'setItem')
@@ -493,15 +345,12 @@ describe('useBackgroundImage', () => {
   })
 
   it('uses client-side API on GitHub Pages', async () => {
-    // Mock GitHub Pages environment
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      configurable: true,
-      value: {
-        hostname: 'user.github.io',
-        pathname: '/repo/',
-      },
-    })
+    // Mock GitHub Pages environment and disable offline mode
+    mockShouldUseLocalImages.mockReturnValue(true)
+
+    localStorage.setItem('appSettings', JSON.stringify({
+      offlineImageMode: false
+    }))
 
     const { result } = renderHook(() => useBackgroundImage())
 

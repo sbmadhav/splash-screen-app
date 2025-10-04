@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Save, Upload, X } from "lucide-react"
+import { ArrowLeft, Save, Upload, X, Info } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { OfflineImageSelector } from "@/components/offline-image-selector"
@@ -640,6 +640,28 @@ export default function SettingsPage() {
                   }`}>System</p>
                 </div>
               </div>
+            </div>
+            
+            {/* Attribution Link */}
+            <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <Label className={resolvedTheme === 'light' ? 'text-gray-700' : 'text-gray-200'}>
+                About This App
+              </Label>
+              <p className={`text-sm ${
+                resolvedTheme === 'light' ? 'text-gray-500' : 'text-gray-400'
+              }`}>View asset sources and credits</p>
+              <Link href="/attributions">
+                <Button
+                  variant="outline"
+                  className={`w-full cursor-pointer ${resolvedTheme === 'light' 
+                    ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                    : 'border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700'
+                  }`}
+                >
+                  <Info className="h-4 w-4 mr-2" />
+                  View Attributions
+                </Button>
+              </Link>
             </div>
             {/* Show Text Toggle */}
             <div className="flex items-center justify-between">

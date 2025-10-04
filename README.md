@@ -366,6 +366,41 @@ The app is compatible with any Node.js hosting platform (Netlify, Railway, Digit
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Asset Attributions
+
+This project uses various assets including background images, music tracks, and icons. Proper attribution is provided for all assets:
+
+- **Background Images**: Mix of Unsplash API images and local library images
+- **Music Files**: Ambient tracks with proper licensing (details in app)
+- **Icons**: Custom created PWA icons and UI elements
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com) (MIT License)
+
+### Viewing Full Attributions
+
+Complete attribution information including sources, creators, and licenses can be viewed:
+- **In the app**: Visit Settings → View Attributions
+- **In this repository**: See [ATTRIBUTIONS.md](ATTRIBUTIONS.md)
+
+### Attribution Verification
+
+To verify attribution completeness:
+```bash
+# Check that all assets have proper attributions
+node scripts/verify-attributions.js
+
+# Generate attribution template for new assets
+node scripts/verify-attributions.js template
+```
+
+### For Content Creators
+
+If you are the creator of any asset used in this project and:
+- Your attribution is missing or incorrect
+- You'd like your content removed
+- You have updated licensing terms
+
+Please open an issue or contact the project maintainer.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
