@@ -2,6 +2,11 @@ import { render, screen, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { PWASplashScreen } from '@/components/pwa-splash-screen'
 
+// Mock debug utils
+jest.mock('@/lib/debug-utils', () => ({
+  debugLog: jest.fn(),
+}))
+
 // Mock service worker registration
 const mockServiceWorkerRegistration = {
   scope: 'https://example.com/',
@@ -192,5 +197,81 @@ describe('PWASplashScreen', () => {
     const progressBar = screen.getByRole('progressbar')
     expect(progressBar).toBeInTheDocument()
     expect(progressBar).toHaveAttribute('role', 'progressbar')
+  })
+
+  describe('Service Worker Registration with getBasePath', () => {
+    it('uses correct service worker path for development environment', async () => {
+      // Mock development environment
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        configurable: true,
+        value: {
+          hostname: 'localhost',
+          pathname: '/',
+        },
+      })
+
+      await act(async () => {
+        render(<PWASplashScreen onComplete={mockOnComplete} />)
+      })
+
+      await waitFor(() => {
+        expect(mockNavigator.register).toHaveBeenCalledWith('/sw.js')
+      })
+    })
+
+    it('uses correct service worker path for GitHub Pages environment', async () => {
+      // Mock GitHub Pages environment
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        configurable: true,
+        value: {
+          hostname: 'username.github.io',
+          pathname: '/splash-screen-app/',
+        },
+      })
+
+      await act(async () => {
+        render(<PWASplashScreen onComplete={mockOnComplete} />)
+      })
+
+      await waitFor(() => {
+        expect(mockNavigator.register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
+      })
+    })
+
+    it('uses correct service worker path when pathname starts with splash-screen-app', async () => {
+      // Mock environment with splash-screen-app in path
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        configurable: true,
+        value: {
+          hostname: 'example.com',
+          pathname: '/splash-screen-app/settings',
+        },
+      })
+
+      await act(async () => {
+        render(<PWASplashScreen onComplete={mockOnComplete} />)
+      })
+
+      await waitFor(() => {
+        expect(mockNavigator.register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
+      })
+    })
+
+    it('logs service worker registration path', async () => {
+      const { debugLog } = require('@/lib/debug-utils')
+      const debugSpy = debugLog as jest.MockedFunction<typeof debugLog>
+      debugSpy.mockClear()
+
+      await act(async () => {
+        render(<PWASplashScreen onComplete={mockOnComplete} />)
+      })
+
+      await waitFor(() => {
+        expect(debugSpy).toHaveBeenCalledWith('[PWA] Registering service worker at:', '/sw.js')
+      })
+    })
   })
 })

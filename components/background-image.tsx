@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { ImageData } from "@/types/image"
+import { debugLog } from "@/lib/debug-utils"
 
 interface BackgroundImageProps {
   imageData: ImageData | null
@@ -11,7 +12,7 @@ export function BackgroundImage({ imageData }: BackgroundImageProps) {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  console.log("[v0] BackgroundImage rendering with:", imageData)
+  debugLog("[v0] BackgroundImage rendering with:", imageData)
 
   useEffect(() => {
     if (imageData?.url && imageData.url !== currentImageUrl) {
@@ -45,7 +46,7 @@ export function BackgroundImage({ imageData }: BackgroundImageProps) {
   }, [imageData?.url, currentImageUrl])
 
   if (!imageData?.url && !currentImageUrl) {
-    console.log("[v0] No image data available, showing fallback")
+    debugLog("[v0] No image data available, showing fallback")
     return (
       <>
         <div className="absolute inset-0 bg-gray-900" />

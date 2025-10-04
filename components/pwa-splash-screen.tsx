@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Progress } from "@/components/ui/progress"
+import { getBasePath } from "@/lib/static-utils"
+import { debugLog } from "@/lib/debug-utils"
 
 interface SplashScreenProps {
   onComplete: () => void
@@ -22,17 +24,15 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
         if ('serviceWorker' in navigator) {
           setStatus("Registering service worker...")
           
-          // Use different path for GitHub Pages vs local development
-          // Check if we're running in the /splash-screen-app/ subdirectory
-          const isGitHubPages = window.location.hostname.includes('github.io') || 
-                               window.location.pathname.startsWith('/splash-screen-app/')
-          const swPath = process.env.NODE_ENV === 'production' && isGitHubPages
-            ? '/splash-screen-app/sw.js' 
-            : '/sw.js'
+          // Use the getBasePath utility for proper path resolution
+          const basePath = getBasePath()
+          const swPath = `${basePath}/sw.js`
+          
+          debugLog('[PWA] Registering service worker at:', swPath)
           
           // Register service worker
           const registration = await navigator.serviceWorker.register(swPath)
-          console.log('[PWA] Service worker registered:', registration)
+          debugLog('[PWA] Service worker registered:', registration)
           
           setProgress(10)
           setStatus("Caching core assets...")
@@ -67,7 +67,7 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
                     targetProgress = Math.max(targetProgress, (cacheStatus as any).progress)
                   }
                 } catch (error) {
-                  console.log('[PWA] Service worker communication failed, using fallback progress')
+                  debugLog('[PWA] Service worker communication failed, using fallback progress')
                 }
               }
               
@@ -93,7 +93,7 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
                 setStatus("Caching core assets...")
               }
             } catch (error) {
-              console.error('[PWA] Error in progress monitoring:', error)
+              debugLog('[PWA] Error in progress monitoring:', error)
               // Fallback to simple increment
               currentProgress = Math.min(currentProgress + 10, 90)
               setProgress(currentProgress)
@@ -117,7 +117,7 @@ export function PWASplashScreen({ onComplete }: SplashScreenProps) {
           }, 200)
         }
       } catch (error) {
-        console.error('[PWA] Error initializing app:', error)
+        debugLog('[PWA] Error initializing app:', error)
         // Fallback to simple loading
         setStatus("Loading app...")
         setTimeout(() => {

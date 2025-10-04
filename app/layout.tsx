@@ -6,6 +6,7 @@ import { Raleway } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { PWAProvider } from "@/components/pwa-provider"
+import { DynamicHead } from "@/components/dynamic-head"
 import "./globals.css"
 
 const raleway = Raleway({
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   title: "Splash Screen App",
   description: "For Focus, Relaxation, or Meetings, with Beautiful Backgrounds",
   generator: "v0.app",
-  manifest: "/manifest.json",
+  // manifest: "/manifest.json", // Removed - will be handled dynamically
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -49,6 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${raleway.variable}`}>
+        <DynamicHead />
         <PWAProvider>
           <Suspense fallback={null}>{children}</Suspense>
         </PWAProvider>
