@@ -205,18 +205,19 @@ export function useBackgroundImage() {
     setLoading(true)
 
     try {
-      // Check app settings
+      // Check app settings with proper defaults
       const savedSettings = localStorage.getItem("appSettings")
       let useCustomImage = false
       let customImageUrl = ""
-      let offlineMode = false
+      let offlineMode = true // Default to true for offline mode
       let selectedOfflineImage = ""
       
       if (savedSettings) {
         const settings: AppSettings = JSON.parse(savedSettings)
         useCustomImage = settings.useCustomImage || false
         customImageUrl = settings.customImageUrl || ""
-        offlineMode = settings.offlineImageMode || false
+        // Use explicit check for offlineImageMode since it should default to true
+        offlineMode = settings.offlineImageMode !== undefined ? settings.offlineImageMode : true
         selectedOfflineImage = settings.selectedOfflineImage || ""
       }
 
@@ -277,18 +278,19 @@ export function useBackgroundImage() {
     setIsTransitioning(true)
     
     try {
-      // Check app settings
+      // Check app settings with proper defaults
       const savedSettings = localStorage.getItem("appSettings")
       let useCustomImage = false
       let customImageUrl = ""
-      let offlineMode = false
+      let offlineMode = true // Default to true for offline mode
       let selectedOfflineImage = ""
       
       if (savedSettings) {
         const settings: AppSettings = JSON.parse(savedSettings)
         useCustomImage = settings.useCustomImage || false
         customImageUrl = settings.customImageUrl || ""
-        offlineMode = settings.offlineImageMode || false
+        // Use explicit check for offlineImageMode since it should default to true
+        offlineMode = settings.offlineImageMode !== undefined ? settings.offlineImageMode : true
         selectedOfflineImage = settings.selectedOfflineImage || ""
       }
 

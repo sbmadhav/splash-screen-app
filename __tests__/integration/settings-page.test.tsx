@@ -104,6 +104,93 @@ describe('Settings Page Integration', () => {
     })
   })
 
+  // Tests for the GitHub Pages deployment fixes
+  describe('Offline Mode and Image Selection', () => {
+    it('initializes with offline mode enabled by default', async () => {
+      // Clear localStorage to test default behavior
+      localStorage.clear()
+      
+      render(<SettingsPage />)
+
+      await waitFor(() => {
+        // Should have initialized settings with default offline mode = true
+        const savedSettings = JSON.parse(localStorage.getItem('appSettings') || '{}')
+        expect(savedSettings.offlineImageMode).toBe(true)
+      })
+
+      // Offline mode switch should be enabled
+      const offlineSwitch = screen.getByRole('switch', { name: /use offline images only/i })
+      expect(offlineSwitch).toBeChecked()
+    })
+
+    it('saves offline mode setting correctly', async () => {
+      render(<SettingsPage />)
+
+      // Find and toggle the offline mode switch
+      const offlineSwitch = screen.getByRole('switch', { name: /use offline images only/i })
+      
+      // Disable offline mode
+      fireEvent.click(offlineSwitch)
+      
+      // Save settings
+      const saveButton = screen.getByText('Save Settings')
+      fireEvent.click(saveButton)
+
+      await waitFor(() => {
+        const savedSettings = JSON.parse(localStorage.getItem('appSettings') || '{}')
+        expect(savedSettings.offlineImageMode).toBe(false)
+      })
+    })
+
+    it('loads existing offline mode setting from localStorage', async () => {
+      // Pre-set offline mode to false
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: false,
+        showLogo: true
+      }))
+
+      render(<SettingsPage />)
+
+      await waitFor(() => {
+        const offlineSwitch = screen.getByRole('switch', { name: /use offline images only/i })
+        expect(offlineSwitch).not.toBeChecked()
+      })
+    })
+
+    it('displays offline image selector when offline mode is enabled', async () => {
+      // Set offline mode to true
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: true
+      }))
+
+      render(<SettingsPage />)
+
+      await waitFor(() => {
+        // Should show the offline image selector
+        expect(screen.getByText('Offline Images')).toBeInTheDocument()
+        expect(screen.getByText('Sunny Beach')).toBeInTheDocument()
+      })
+    })
+
+    it('handles settings with undefined offlineImageMode', async () => {
+      // Set settings without offlineImageMode property
+      localStorage.setItem('appSettings', JSON.stringify({
+        showLogo: true,
+        theme: 'dark'
+        // offlineImageMode is undefined
+      }))
+
+      render(<SettingsPage />)
+
+      await waitFor(() => {
+        // Should load settings and set defaults, but offlineImageMode might not be automatically saved
+        // Let's just check that the component renders without crashing and the switch is in the default state
+        const offlineSwitch = screen.getByRole('switch', { name: /use offline images only/i })
+        expect(offlineSwitch).toBeChecked() // Should default to true
+      })
+    })
+  })
+
   it('validates file size limits', async () => {
     const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {})
     

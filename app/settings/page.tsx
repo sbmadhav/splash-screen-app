@@ -107,10 +107,16 @@ export default function SettingsPage() {
         setSettings(parsed)
         setTempSettings(parsed)
       } else {
+        // Save default settings if none exist
+        localStorage.setItem("appSettings", JSON.stringify(defaultSettings))
+        setSettings(defaultSettings)
         setTempSettings(defaultSettings)
       }
     } catch (error) {
       console.error("Failed to load settings:", error)
+      // Save default settings on error as well
+      localStorage.setItem("appSettings", JSON.stringify(defaultSettings))
+      setSettings(defaultSettings)
       setTempSettings(defaultSettings)
     } finally {
       setLoading(false)

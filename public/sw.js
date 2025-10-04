@@ -4,8 +4,8 @@ const DYNAMIC_CACHE = 'splash-app-dynamic-v1';
 
 // Assets to cache immediately (core assets only)
 const STATIC_ASSETS = [
-  '/',
-  '/settings',
+  './',
+  './settings/',
   './manifest.json',
   // Icons
   './icon-16x16.png',

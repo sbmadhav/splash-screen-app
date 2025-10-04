@@ -179,8 +179,287 @@ describe('useBackgroundImage', () => {
       expect(result.current.imageData).not.toBeNull()
     })
 
-    // GitHub Pages uses Picsum Photos fallback when no API key
+        // GitHub Pages uses Picsum Photos fallback when no API key
     expect(result.current.imageData?.url).toMatch(/picsum\.photos\/seed/)
+  })
+
+  it('relies on service worker for caching on GitHub Pages', async () => {
+    // Mock GitHub Pages environment
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      configurable: true,
+      value: {
+        hostname: 'username.github.io',
+        pathname: '/splash-screen-app/',
+      },
+    })
+
+    // Create spies for localStorage methods
+    const localStorageSetItemSpy = jest.spyOn(Storage.prototype, 'setItem')
+    
+    const { result } = renderHook(() => useBackgroundImage())
+
+    await waitFor(() => {
+      expect(result.current.imageData).not.toBeNull()
+    })
+
+    // Should not cache images in localStorage on GitHub Pages (relies on service worker)
+    expect(localStorageSetItemSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining('cached_image_'),
+      expect.any(String)
+    )
+
+    localStorageSetItemSpy.mockRestore()
+  })
+
+  // Tests for offline mode scenarios that were fixed
+  describe('Offline Mode Scenarios', () => {
+    beforeEach(() => {
+      // Reset localStorage
+      localStorage.clear()
+    })
+
+    it('defaults to offline mode when no settings exist', async () => {
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should load local image by default (offline mode = true)
+      expect(result.current.imageData?.isLocal).toBe(true)
+      expect(result.current.imageData?.url).toContain('/background/')
+    })
+
+    it('respects explicit offline mode setting from localStorage', async () => {
+      // Set offline mode to true in settings
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: true
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should load local image when offline mode is enabled
+      expect(result.current.imageData?.isLocal).toBe(true)
+      expect(result.current.imageData?.url).toContain('/background/')
+    })
+
+    it('uses API when offline mode is explicitly disabled', async () => {
+      // Set offline mode to false in settings
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: false
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should make API call when offline mode is disabled
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/random-image')
+      )
+    })
+
+    it('loads specific offline image when selected', async () => {
+      // Set offline mode with specific image selected
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: true,
+        selectedOfflineImage: 'Beach-Summer2.jpg'
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should load the specific selected image
+      expect(result.current.imageData?.url).toContain('Beach-Summer2.jpg')
+      expect(result.current.imageData?.title).toBe('Tropical Beach')
+    })
+
+    it('handles undefined offlineImageMode correctly', async () => {
+      // Set settings without offlineImageMode property
+      localStorage.setItem('appSettings', JSON.stringify({
+        showLogo: true,
+        theme: 'dark'
+        // offlineImageMode is undefined
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should default to offline mode (true) when undefined
+      expect(result.current.imageData?.isLocal).toBe(true)
+    })
+  })
+    })
+
+    it('uses API when offline mode is explicitly disabled', async () => {
+      // Set offline mode to false in settings
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: false
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should make API call when offline mode is disabled
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/random-image')
+      )
+    })
+
+    it('loads specific offline image when selected', async () => {
+      // Set offline mode with specific image selected
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: true,
+        selectedOfflineImage: 'Beach-Summer2.jpg'
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should load the specific selected image
+      expect(result.current.imageData?.url).toContain('Beach-Summer2.jpg')
+      expect(result.current.imageData?.title).toBe('Tropical Beach')
+    })
+
+    it('falls back to random local image when selected image not found', async () => {
+      // Set offline mode with non-existent image
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: true,
+        selectedOfflineImage: 'NonExistent.jpg'
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should fall back to a valid local image
+      expect(result.current.imageData?.isLocal).toBe(true)
+      expect(result.current.imageData?.url).toContain('/background/')
+    })
+
+    it('handles undefined offlineImageMode correctly', async () => {
+      // Set settings without offlineImageMode property
+      localStorage.setItem('appSettings', JSON.stringify({
+        showLogo: true,
+        theme: 'dark'
+        // offlineImageMode is undefined
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should default to offline mode (true) when undefined
+      expect(result.current.imageData?.isLocal).toBe(true)
+    })
+
+    it('uses custom image when enabled over offline mode', async () => {
+      // Set both custom image and offline mode
+      localStorage.setItem('appSettings', JSON.stringify({
+        useCustomImage: true,
+        customImageUrl: 'data:image/jpeg;base64,customImageData',
+        offlineImageMode: true
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Custom image should take precedence
+      expect(result.current.imageData?.isCustom).toBe(true)
+      expect(result.current.imageData?.url).toBe('data:image/jpeg;base64,customImageData')
+    })
+
+    it('responds to settings changes via custom event', async () => {
+      // Start with offline mode disabled
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: false
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should initially make API call
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/random-image')
+      )
+
+      // Clear fetch mock
+      ;(global.fetch as jest.Mock).mockClear()
+
+      // Update settings to enable offline mode
+      const newSettings = { offlineImageMode: true }
+      localStorage.setItem('appSettings', JSON.stringify(newSettings))
+
+      // Trigger settings change event
+      await act(async () => {
+        window.dispatchEvent(new CustomEvent('settingsChanged', { detail: newSettings }))
+      })
+
+      await waitFor(() => {
+        expect(result.current.imageData?.isLocal).toBe(true)
+      })
+
+      // Should not make API call after switching to offline mode
+      expect(global.fetch).not.toHaveBeenCalled()
+    })
+
+    it('enables rotation mode when refresh is triggered in offline mode', async () => {
+      localStorage.setItem('appSettings', JSON.stringify({
+        offlineImageMode: true
+      }))
+
+      const { result } = renderHook(() => useBackgroundImage())
+
+      await waitFor(() => {
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      const initialImageUrl = result.current.imageData?.url
+
+      // Trigger image refresh with transition
+      await act(async () => {
+        await result.current.loadNewImageWithTransition()
+      })
+
+      await waitFor(() => {
+        // Image might change due to rotation being enabled
+        expect(result.current.imageData).not.toBeNull()
+      })
+
+      // Should still be local image
+      expect(result.current.imageData?.isLocal).toBe(true)
+    })
+  })
+})
   })
 
   it('relies on service worker for caching on GitHub Pages', async () => {
