@@ -168,4 +168,148 @@ describe('PWAProvider', () => {
 
     process.env = originalEnv
   })
+
+  describe('GitHub Pages detection', () => {
+    it('detects GitHub Pages via hostname', async () => {
+      // Mock production environment
+      const originalEnv = process.env
+      process.env = { ...process.env, NODE_ENV: 'production' }
+
+      // Mock window.location for GitHub Pages hostname
+      delete (window as any).location
+      window.location = {
+        hostname: 'username.github.io',
+        pathname: '/some-repo/',
+      } as any
+
+      await act(async () => {
+        render(
+          <PWAProvider>
+            <div>Content</div>
+          </PWAProvider>
+        )
+      })
+
+      expect(mockNavigator.serviceWorker.register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
+
+      process.env = originalEnv
+    })
+
+    it('detects GitHub Pages via pathname', async () => {
+      // Mock production environment
+      const originalEnv = process.env
+      process.env = { ...process.env, NODE_ENV: 'production' }
+
+      // Mock window.location for GitHub Pages pathname
+      delete (window as any).location
+      window.location = {
+        hostname: 'example.com',
+        pathname: '/splash-screen-app/some-page',
+      } as any
+
+      await act(async () => {
+        render(
+          <PWAProvider>
+            <div>Content</div>
+          </PWAProvider>
+        )
+      })
+
+      expect(mockNavigator.serviceWorker.register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
+
+      process.env = originalEnv
+    })
+
+    it('uses local service worker path for non-GitHub Pages', async () => {
+      // Mock production environment
+      const originalEnv = process.env
+      process.env = { ...process.env, NODE_ENV: 'production' }
+
+      // Mock window.location for non-GitHub Pages
+      delete (window as any).location
+      window.location = {
+        hostname: 'mydomain.com',
+        pathname: '/app/',
+      } as any
+
+      await act(async () => {
+        render(
+          <PWAProvider>
+            <div>Content</div>
+          </PWAProvider>
+        )
+      })
+
+      expect(mockNavigator.serviceWorker.register).toHaveBeenCalledWith('/sw.js')
+
+      process.env = originalEnv
+    })
+
+    it('uses local service worker path in development', async () => {
+      // Mock development environment
+      const originalEnv = process.env
+      process.env = { ...process.env, NODE_ENV: 'development' }
+
+      // Mock window.location for GitHub Pages (should still use local path in dev)
+      delete (window as any).location
+      window.location = {
+        hostname: 'username.github.io',
+        pathname: '/splash-screen-app/',
+      } as any
+
+      await act(async () => {
+        render(
+          <PWAProvider>
+            <div>Content</div>
+          </PWAProvider>
+        )
+      })
+
+      expect(mockNavigator.serviceWorker.register).toHaveBeenCalledWith('/sw.js')
+
+      process.env = originalEnv
+    })
+  })
+
+  describe('service worker registration error handling', () => {
+    it('handles service worker registration failure gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+      const mockError = new Error('Registration failed')
+      mockNavigator.serviceWorker.register.mockRejectedValueOnce(mockError)
+
+      await act(async () => {
+        render(
+          <PWAProvider>
+            <div>Content</div>
+          </PWAProvider>
+        )
+      })
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('[PWA] Service worker registration failed:', mockError)
+      })
+
+      consoleSpy.mockRestore()
+    })
+
+    it('logs successful service worker registration', async () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+      const mockRegistration = { scope: 'test-scope' }
+      mockNavigator.serviceWorker.register.mockResolvedValueOnce(mockRegistration)
+
+      await act(async () => {
+        render(
+          <PWAProvider>
+            <div>Content</div>
+          </PWAProvider>
+        )
+      })
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('[PWA] Service worker registered:', mockRegistration)
+      })
+
+      consoleSpy.mockRestore()
+    })
+  })
 })

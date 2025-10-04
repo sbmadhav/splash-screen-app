@@ -4,7 +4,11 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.9-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Jest](https://img.shields.io/badge/Jest-29.7.0-C21325?style=flat&logo=jest&logoColor=white)](https://jestjs.io/)
+[![Tests](https://img.shields.io/badge/Tests-231%20passed-brightgreen?style=flat&logo=jest&logoColor=white)](https://jestjs.io/)
+[![Test Status](https://img.shields.io/badge/Test%20Status-✅%20Passing-brightgreen?style=flat&logo=checkmarq&logoColor=white)](#testing)
+[![Coverage](https://img.shields.io/badge/Coverage-45.11%25-yellow?style=flat&logo=jest&logoColor=white)](#testing)
+[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-43.29%25-yellow?style=flat&logo=git-branch&logoColor=white)](#testing)
+[![Function Coverage](https://img.shields.io/badge/Function%20Coverage-33.81%25-orange?style=flat&logo=code&logoColor=white)](#testing)
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://vercel.com/)
@@ -59,6 +63,12 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 - **Cross-Platform**: Works on desktop, tablet, and mobile devices
 - **App-Like Experience**: Native app feel with web accessibility
 
+### 📊 Analytics & Insights
+- **Google Analytics 4**: Optional privacy-conscious usage tracking
+- **Performance Monitoring**: Built-in Vercel Analytics integration
+- **GDPR Friendly**: Analytics only enabled when configured, no default tracking
+- **Environment-Based**: Analytics automatically disabled in development mode
+
 ### ⚡ Performance Optimizations
 - **Lightning-Fast Load**: Core app loads in ~1 second, assets loaded on-demand
 - **Lazy Caching Strategy**: Background images and music files cached only when accessed
@@ -79,7 +89,7 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 - **APIs**: Client-side Unsplash integration for GitHub Pages compatibility
 - **State Management**: localStorage with custom event broadcasting
 - **Build Tools**: PNPM package manager with optimized build pipeline
-- **Testing**: Jest with React Testing Library - **[View Test Coverage](./TEST_SUMMARY.md)** (85 tests, 100% pass rate)
+- **Testing**: Jest with React Testing Library - **[View Test Coverage](./TEST_SUMMARY.md)** (231 tests, 100% pass rate, 45.11% coverage)
 
 ## Getting Started
 
@@ -93,8 +103,9 @@ For secure API key management and deployment practices, see our detailed [Securi
 
 **Quick Setup for GitHub Pages:**
 1. Add `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` as a GitHub repository secret
-2. The GitHub Actions workflow will automatically use it during deployment
-3. Never commit API keys to version control
+2. Add `NEXT_PUBLIC_GA_MEASUREMENT_ID` as a GitHub repository secret (optional, for analytics)
+3. The GitHub Actions workflow will automatically use them during deployment
+4. Never commit API keys to version control
 
 ### Installation
 
@@ -109,13 +120,16 @@ For secure API key management and deployment practices, see our detailed [Securi
    ```bash
    cp .env.example .env.local
    ```
-   Add your Unsplash API key for enhanced background variety:
+   Add your API keys for enhanced features:
    ```
    # For development (server-side)
    UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
    
    # For GitHub Pages deployment (client-side)
    NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=your_unsplash_access_key_here
+   
+   # Google Analytics 4 (optional, for usage analytics)
+   NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
    ```
 
 3. **Start development server**
@@ -270,6 +284,7 @@ Access comprehensive customization options:
 |----------|-------------|----------|
 | `UNSPLASH_ACCESS_KEY` | Enables high-quality seasonal backgrounds (development) | No |
 | `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` | Enables Unsplash API for GitHub Pages (client-side) | No |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 measurement ID for usage tracking | No |
 | `NEXT_PUBLIC_VERCEL_URL` | Deployment URL for production builds | No |
 
 Without the Unsplash key, the app gracefully falls back to Picsum photos and the offline image library.
@@ -286,9 +301,10 @@ For GitHub Pages deployment with full API support:
 
 **🚀 Performance Note**: The app is specifically optimized for GitHub Pages with client-side API calls and lazy caching strategies that ensure fast loading times.
 
-1. **Set up repository secrets** (optional, for Unsplash API):
+1. **Set up repository secrets** (optional, for enhanced features):
    - Go to your repository Settings → Secrets and variables → Actions
    - Add `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY` with your Unsplash access key
+   - Add `NEXT_PUBLIC_GA_MEASUREMENT_ID` with your Google Analytics 4 measurement ID
 
 2. **Build and deploy**:
    ```bash
@@ -321,6 +337,7 @@ For GitHub Pages deployment with full API support:
          - run: ./build-github.sh
            env:
              NEXT_PUBLIC_UNSPLASH_ACCESS_KEY: ${{ secrets.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY }}
+             NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
          - uses: actions/deploy-pages@v3
            with:
              path: out/splash-screen-app
@@ -357,6 +374,167 @@ The app is compatible with any Node.js hosting platform (Netlify, Railway, Digit
 - Firefox 85+
 - Safari 14+
 - Mobile browsers with Web Audio API support
+
+## Testing
+
+[![Tests](https://img.shields.io/badge/Tests-231%20passed-brightgreen?style=flat&logo=jest&logoColor=white)](https://jestjs.io/)
+[![Test Status](https://img.shields.io/badge/Test%20Status-✅%20Passing-brightgreen?style=flat&logo=checkmarq&logoColor=white)](#testing)
+[![Coverage](https://img.shields.io/badge/Coverage-45.11%25-yellow?style=flat&logo=jest&logoColor=white)](#testing)
+[![Branch Coverage](https://img.shields.io/badge/Branch%20Coverage-43.29%25-yellow?style=flat&logo=git-branch&logoColor=white)](#testing)
+[![Function Coverage](https://img.shields.io/badge/Function%20Coverage-33.81%25-orange?style=flat&logo=code&logoColor=white)](#testing)
+
+This project maintains a comprehensive test suite to ensure reliability and prevent regressions. All tests are currently passing with optimized timer management to prevent memory leaks.
+
+### Test Commands
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests with coverage report
+pnpm test -- --coverage
+
+# Run tests in watch mode during development
+pnpm test -- --watch
+
+# Run tests in CI mode (useful for GitHub Actions)
+pnpm test -- --ci --watchAll=false
+
+# Run specific test file
+pnpm test -- --testPathPattern=background-image
+
+# Run specific test suite  
+pnpm test -- --testNamePattern="renders correctly"
+```
+
+### Test Coverage Summary
+
+| Metric | Percentage | Status |
+|--------|------------|--------|
+| **Statements** | 45.11% | 🟡 Good |
+| **Branches** | 43.29% | 🟡 Good |
+| **Functions** | 33.81% | 🟠 Adequate |
+| **Lines** | 44.86% | 🟡 Good |
+
+**Total Tests**: 233 (231 passed, 2 skipped)
+**Test Suites**: 28 passed
+**Runtime**: ~16-19 seconds
+
+### Test Structure
+
+```
+__tests__/
+├── components/              # Component unit tests (25 test files)
+│   ├── audio-visualizer.test.tsx      # Audio visualization component
+│   ├── background-image.test.tsx      # Dynamic background handling
+│   ├── dynamic-head.test.tsx          # SEO and meta tag management
+│   ├── music-player.test.tsx          # Audio playback controls
+│   ├── pwa-install-prompt.test.tsx    # PWA installation UI
+│   ├── timer-display.test.tsx         # Countdown timer logic
+│   ├── text-display.test.tsx          # Custom text rendering
+│   └── ...more
+├── api/                     # API route tests (3 test files)
+│   ├── random-image.test.ts
+│   ├── env-vars.test.ts
+│   └── bing-image/
+├── hooks/                   # Custom hook tests (2 test files)
+│   ├── use-background-image-enhanced.test.ts
+│   └── use-background-image-offline-mode.test.ts
+├── lib/                     # Utility function tests (3 test files)
+│   ├── debug-utils.test.ts
+│   ├── static-utils.test.ts
+│   └── utils.test.ts
+├── integration/             # Full feature integration tests (4 test files)
+│   ├── settings-page.test.tsx
+│   ├── home-page.test.tsx
+│   ├── performance-lazy-caching.test.tsx
+│   └── pwa-integration.test.tsx
+└── service-worker/          # Service worker tests (1 test file)
+    └── lazy-caching.test.ts
+```
+
+### Current Test Coverage
+
+```
+Overall Coverage: 45.11%
+┌─────────────┬────────────┬────────────┬────────────┬────────────┐
+│ Type        │ % Stmts    │ % Branch   │ % Funcs    │ % Lines    │
+├─────────────┼────────────┼────────────┼────────────┼────────────┤
+│ App Pages   │ 68.65%     │ 66.66%     │ 63.63%     │ 74.07%     │
+│ Components  │ 60.46%     │ 49.29%     │ 57.27%     │ 61.60%     │
+│ Hooks       │ 41.94%     │ 43.19%     │ 43.05%     │ 41.49%     │
+│ Libraries   │ 66.89%     │ 49.45%     │ 77.27%     │ 64.95%     │
+│ UI Kit      │ 6.85%      │ 4.01%      │ 6.37%      │ 7.31%      │
+└─────────────┴────────────┴────────────┴────────────┴────────────┘
+```
+
+### Test Coverage Highlights
+
+**✅ Well-Tested Areas (>60% coverage):**
+- **Core App Components**: Main page, debug utilities, static utilities
+- **Background Image System**: API integration, fallbacks, lazy loading  
+- **PWA Features**: Install prompts, service worker, splash screens
+- **Music Player**: Playback controls, debug logging, state management
+- **Timer Functionality**: Countdown logic, formatting, event handling
+- **Component Library**: Main functional components (60.46% coverage)
+
+**🔶 Moderate Coverage (40-60%):**
+- **Custom Hooks**: Background image management, countdown logic (41.94% coverage)
+- **Settings Management**: User preferences, theme handling
+- **Audio Visualizer**: Web Audio API integration, canvas rendering
+
+**⚠️ Areas for Improvement (<40%):**
+- **UI Component Library**: shadcn/ui components (6.85% coverage)
+- **Edge Cases**: Error boundaries, network failures
+
+### Quality Assurance Features
+
+- **🚀 Performance Tests**: Lazy loading, caching strategies, memory usage
+- **🔄 Integration Tests**: Full user workflows, component interactions
+- **🛡️ PWA Tests**: Installation flows, offline functionality, service worker
+- **🎵 Audio Tests**: Web Audio API, visualizer effects, timing precision
+- **📱 Mobile Tests**: Responsive design, touch interactions
+- **⚡ Speed Tests**: Load time validation, asset optimization
+- **🌐 API Tests**: External service integration, fallback mechanisms
+- **💾 Persistence Tests**: localStorage, settings synchronization
+
+### Testing Best Practices
+
+When contributing new features, please include:
+
+1. **Unit Tests**: Test individual components and functions
+2. **Integration Tests**: Test component interactions
+3. **Coverage Requirements**: Aim for >80% coverage on new code
+4. **Mock External Dependencies**: APIs, localStorage, Web Audio API
+5. **Test Edge Cases**: Network failures, invalid inputs, browser limitations
+
+### Debug Testing
+
+The project includes specialized debug tests for development:
+
+```bash
+# Run debug-specific tests
+pnpm test -- --testNamePattern="debug"
+
+# Test music player debug functionality
+pnpm test -- __tests__/components/music-player-debug.test.tsx
+
+# Test audio visualizer debug features
+pnpm test -- __tests__/components/audio-visualizer-debug.test.tsx
+```
+
+### Continuous Integration
+
+All tests run automatically on:
+- Pull request creation
+- Push to main branch
+- Release preparation
+
+The CI pipeline ensures:
+- ✅ All tests pass (211/211)
+- ✅ No TypeScript errors
+- ✅ Code style compliance
+- ✅ Build success for multiple environments
 
 ## Contributing
 

@@ -1,4 +1,27 @@
-# 🔐 Secure API Key Management for GitHub Pages
+# 🔐 Secure API Key Managem3. Go to **Secrets and variables** → **Actions**
+4. Click **New repository secret**
+5. Add the following secrets:
+
+   **For Unsplash API (optional):**
+   - Name: `NEXT_PUBLIC_UNSPLASH_ACCESS_KEY`
+   - Value: Your Unsplash API key
+
+   **For Google Analytics (optional):**
+   - Name: `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+   - Value: Your GA4 measurement ID (e.g., G-XXXXXXXXXX)
+
+6. Click **Add secret** for each
+
+**Step 2: Use in GitHub Actions**
+The workflow file (`.github/workflows/nextjs.yml`) is already configured:
+
+```yaml
+- name: Build with Next.js
+  env:
+    NEXT_PUBLIC_UNSPLASH_ACCESS_KEY: ${{ secrets.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY }}
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+  run: ${{ steps.detect-package-manager.outputs.runner }} next build
+```Pages
 
 ## Overview
 
@@ -46,14 +69,16 @@ The workflow file (`.github/workflows/nextjs.yml`) is already configured:
 Use the secure deployment script:
 
 ```bash
-# Set the API key temporarily
-export NEXT_PUBLIC_UNSPLASH_ACCESS_KEY="your_key_here"
+# Set the API keys temporarily
+export NEXT_PUBLIC_UNSPLASH_ACCESS_KEY="your_unsplash_key_here"
+export NEXT_PUBLIC_GA_MEASUREMENT_ID="your_ga_measurement_id_here"
 
 # Run the secure deployment script
 ./scripts/secure-deploy.sh
 
-# Unset the API key
+# Unset the API keys
 unset NEXT_PUBLIC_UNSPLASH_ACCESS_KEY
+unset NEXT_PUBLIC_GA_MEASUREMENT_ID
 ```
 
 ### Method 3: API Key Rotation

@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { getBasePath } from "@/lib/static-utils"
+import { getBasePath, shouldUseLocalImages } from "@/lib/static-utils"
+import { debugLog } from '@/lib/debug-utils'
 
 interface LocalImage {
   name: string
@@ -52,7 +53,7 @@ export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'da
   }
 
   const handleImageLoad = (imageName: string) => {
-    console.log('Image loaded successfully:', imageName)
+    debugLog('Image loaded successfully:', imageName)
     setImageErrors(prev => {
       const newSet = new Set(prev)
       newSet.delete(imageName)
@@ -166,7 +167,7 @@ export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'da
                           handleImageError(image.name)
                         }}
                         onLoad={(e) => {
-                          console.log('Image loaded successfully:', image.name)
+                          debugLog('Image loaded successfully:', image.name)
                           handleImageLoad(image.name)
                         }}
                       />

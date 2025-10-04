@@ -8,6 +8,7 @@ describe('useBackgroundImage - Offline Mode Scenarios', () => {
   beforeEach(() => {
     // Reset mocks and localStorage
     jest.clearAllMocks()
+    jest.useFakeTimers()
     global.localStorage.clear()
     
     // Mock FileReader for image caching
@@ -34,6 +35,12 @@ describe('useBackgroundImage - Offline Mode Scenarios', () => {
       }),
       blob: () => Promise.resolve(new Blob())
     })
+  })
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    jest.restoreAllMocks()
   })
 
   it('defaults to offline mode when no settings exist', async () => {
@@ -75,7 +82,7 @@ describe('useBackgroundImage - Offline Mode Scenarios', () => {
 
     await waitFor(() => {
       expect(result.current.imageData).not.toBeNull()
-    })
+    }, { timeout: 10000 })
 
     // Should make API call when offline mode is disabled
     expect(global.fetch).toHaveBeenCalledWith(

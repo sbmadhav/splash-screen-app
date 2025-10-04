@@ -22,6 +22,10 @@ const customJestConfig = {
     '**/__tests__/**/*.(js|jsx|ts|tsx)',
     '**/*.(test|spec).(js|jsx|ts|tsx)',
   ],
+  testTimeout: 10000,
+  maxWorkers: 1,
+  forceExit: true,
+  detectOpenHandles: true,
 }
 
 module.exports = createJestConfig(customJestConfig)

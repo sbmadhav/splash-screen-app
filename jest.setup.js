@@ -1,5 +1,37 @@
 import '@testing-library/jest-dom'
 
+// Global cleanup after each test
+afterEach(() => {
+  // Only try to clear timers if fake timers are being used
+  try {
+    if (jest.isMockFunction(setTimeout)) {
+      jest.runOnlyPendingTimers()
+    }
+    jest.clearAllTimers()
+  } catch (e) {
+    // Ignore timer errors if fake timers aren't active
+  }
+  
+  // Clear all mocks
+  jest.clearAllMocks()
+  
+  // Reset localStorage if it exists
+  if (typeof localStorage !== 'undefined' && localStorage.clear) {
+    localStorage.clear()
+  }
+  
+  // Clear any remaining DOM events
+  if (typeof document !== 'undefined') {
+    document.body.innerHTML = ''
+  }
+  
+  // Reset window events only if window exists
+  if (typeof window !== 'undefined') {
+    window.removeEventListener = jest.fn()
+    window.addEventListener = jest.fn()
+  }
+})
+
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -178,3 +210,4 @@ jest.mock('next/server', () => ({
 // Mock process.env for API tests
 process.env.UNSPLASH_ACCESS_KEY = 'test_access_key_1234'
 process.env.NEXT_PUBLIC_VERCEL_URL = 'https://test.vercel.app'
+process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = 'G-TEST123456'

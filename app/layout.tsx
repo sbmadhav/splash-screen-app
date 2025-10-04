@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { PWAProvider } from "@/components/pwa-provider"
 import { DynamicHead } from "@/components/dynamic-head"
+import { GoogleAnalytics } from "@/components/google-analytics"
 import "./globals.css"
 
 const raleway = Raleway({
@@ -50,6 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${raleway.variable}`}>
+        <GoogleAnalytics />
         <DynamicHead />
         <PWAProvider>
           <Suspense fallback={null}>{children}</Suspense>
