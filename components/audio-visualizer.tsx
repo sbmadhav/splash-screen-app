@@ -52,27 +52,6 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
         if (isPlaying) {
           // Initialize if needed
           if (!isInitialized) {
-            console.log('[AudioVisualizer] Initializing audio for prop change...')
-            await initAudio()
-          }
-
-          // Resume context if suspended
-          if (audioContextRef.current?.state === 'suspended') {
-            console.log('[AudioVisualizer] Resuming suspended audio context...')
-            await audioContextRef.current.resume()
-          }
-
-          // Ensure audio is ready
-          if (audio.readyState < 2) {
-            console.log('[AudioVisualizer] Waiting for audio to be ready...')
-            await new Promise((resolve) => {
-              audio.addEventListener('canplay', resolve, { once: true })
-            })
-          }
-
-          if (isPlaying) {
-          // Initialize if needed
-          if (!isInitialized) {
             debugLog('[AudioVisualizer] Initializing audio for prop change...')
             await initAudio()
           }
@@ -102,18 +81,6 @@ export function AudioVisualizer({ audioUrl, isPlaying = false, onPlayStateChange
           if (animationRef.current) {
             cancelAnimationFrame(animationRef.current)
             debugLog('[AudioVisualizer] Animation cancelled')
-          }
-        }
-          await audio.play()
-          console.log('[AudioVisualizer] Audio.play() completed, starting draw loop...')
-          draw()
-          console.log('[AudioVisualizer] Draw function called')
-        } else {
-          console.log('[AudioVisualizer] Pausing audio...')
-          audio.pause()
-          if (animationRef.current) {
-            cancelAnimationFrame(animationRef.current)
-            console.log('[AudioVisualizer] Animation cancelled')
           }
         }
       } catch (error) {

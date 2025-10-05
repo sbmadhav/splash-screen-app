@@ -40,7 +40,15 @@ const LOCAL_IMAGES: LocalImage[] = [
   { name: "Mountain-Summer2.jpg", title: "High Mountains", location: "Alpine View" },
   { name: "Mountain-Summer3.jpg", title: "Mountain Range", location: "Scenic Vista" },
   { name: "Mountain-Winter.jpg", title: "Snow Mountains", location: "Winter Peaks" },
-  { name: "Mountain-Winter2.jpg", title: "Snowy Range", location: "Alpine Winter" }
+  { name: "Mountain-Winter2.jpg", title: "Snowy Range", location: "Alpine Winter" },
+  { name: "Mountain-Winter3.jpg", title: "Icy Peaks", location: "Frozen Heights" },
+  { name: "Mountain-Winter4.jpg", title: "White Mountains", location: "Snow Valley" },
+  { name: "Mountain-Winter5.jpg", title: "Arctic Peaks", location: "Polar Vista" },
+  { name: "Mountain-Winter6.jpg", title: "Glacier Mountains", location: "Ice Kingdom" },
+  { name: "River-Fall.jpg", title: "Autumn River", location: "Fall Stream" },
+  { name: "Sea-Summer.jpg", title: "Summer Sea", location: "Ocean Blue" },
+  { name: "Sea-Summer2.jpg", title: "Tropical Sea", location: "Paradise Waters" },
+  { name: "Sky-Winter.jpg", title: "Winter Sky", location: "Cloudy Horizon" }
 ]
 
 export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'dark' }: OfflineImageSelectorProps) {
@@ -59,6 +67,12 @@ export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'da
       newSet.delete(imageName)
       return newSet
     })
+  }
+
+  // Get thumbnail path for settings page display
+  const getThumbnailPath = (imageName: string) => {
+    const thumbnailName = imageName.replace(/\.(jpg|jpeg|png)$/i, '.webp')
+    return `${getBasePath()}/background/thumbnails/${thumbnailName}`
   }
 
   useEffect(() => {
@@ -153,7 +167,7 @@ export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'da
                       </div>
                     ) : (
                       <img
-                        src={`${getBasePath()}/background/${image.name}`}
+                        src={getThumbnailPath(image.name)}
                         alt={image.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
@@ -163,11 +177,13 @@ export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'da
                           backgroundColor: theme === 'light' ? '#f3f4f6' : '#374151'
                         }}
                         onError={(e) => {
-                          console.warn('Failed to load image:', image.name)
-                          handleImageError(image.name)
+                          console.warn('Failed to load thumbnail:', image.name, '- falling back to original')
+                          // Fallback to original image if thumbnail fails
+                          const imgElement = e.target as HTMLImageElement
+                          imgElement.src = `${getBasePath()}/background/${image.name}`
                         }}
                         onLoad={(e) => {
-                          debugLog('Image loaded successfully:', image.name)
+                          debugLog('Thumbnail loaded successfully:', image.name)
                           handleImageLoad(image.name)
                         }}
                       />
@@ -211,7 +227,7 @@ export function OfflineImageSelector({ onImageSelect, selectedImage, theme = 'da
             : 'text-gray-400 bg-gray-800'
         }`}>
           <p className="font-medium mb-1">💡 Tip:</p>
-          <p>These images are stored locally on your device and work without an internet connection. Perfect for when you're offline or want consistent loading times.</p>
+          <p>These thumbnails are optimized WebP images for fast loading. When you select an image, the full-quality version will be used for your background. All images work offline!</p>
         </div>
       </CardContent>
     </Card>

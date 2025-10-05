@@ -1,0 +1,127 @@
+{
+  "generated": "2025-10-05T00:48:42.542Z",
+  "config": {
+    "width": 200,
+    "height": 112,
+    "quality": 75,
+    "format": "webp"
+  },
+  "thumbnails": [
+    {
+      "original": "Beach-Summer.jpg",
+      "thumbnail": "Beach-Summer.webp"
+    },
+    {
+      "original": "Beach-Summer2.jpg",
+      "thumbnail": "Beach-Summer2.webp"
+    },
+    {
+      "original": "City-Spring.jpg",
+      "thumbnail": "City-Spring.webp"
+    },
+    {
+      "original": "City-Winter.jpg",
+      "thumbnail": "City-Winter.webp"
+    },
+    {
+      "original": "Dessert-Summer.jpg",
+      "thumbnail": "Dessert-Summer.webp"
+    },
+    {
+      "original": "Dessert-Winter.jpg",
+      "thumbnail": "Dessert-Winter.webp"
+    },
+    {
+      "original": "Forrest-Summer.jpg",
+      "thumbnail": "Forrest-Summer.webp"
+    },
+    {
+      "original": "Lake-Spring.jpg",
+      "thumbnail": "Lake-Spring.webp"
+    },
+    {
+      "original": "Lake-Spring2.jpg",
+      "thumbnail": "Lake-Spring2.webp"
+    },
+    {
+      "original": "Lake-Sumer.jpg",
+      "thumbnail": "Lake-Sumer.webp"
+    },
+    {
+      "original": "Lake-Winter.jpg",
+      "thumbnail": "Lake-Winter.webp"
+    },
+    {
+      "original": "Lake-Winter2.jpg",
+      "thumbnail": "Lake-Winter2.webp"
+    },
+    {
+      "original": "Lake-Winter3.jpg",
+      "thumbnail": "Lake-Winter3.webp"
+    },
+    {
+      "original": "Mountain-Fall.jpg",
+      "thumbnail": "Mountain-Fall.webp"
+    },
+    {
+      "original": "Mountain-Fall2.jpg",
+      "thumbnail": "Mountain-Fall2.webp"
+    },
+    {
+      "original": "Mountain-Spring.jpg",
+      "thumbnail": "Mountain-Spring.webp"
+    },
+    {
+      "original": "Mountain-Summer.jpg",
+      "thumbnail": "Mountain-Summer.webp"
+    },
+    {
+      "original": "Mountain-Summer2.jpg",
+      "thumbnail": "Mountain-Summer2.webp"
+    },
+    {
+      "original": "Mountain-Summer3.jpg",
+      "thumbnail": "Mountain-Summer3.webp"
+    },
+    {
+      "original": "Mountain-Winter.jpg",
+      "thumbnail": "Mountain-Winter.webp"
+    },
+    {
+      "original": "Mountain-Winter2.jpg",
+      "thumbnail": "Mountain-Winter2.webp"
+    },
+    {
+      "original": "Mountain-Winter3.jpg",
+      "thumbnail": "Mountain-Winter3.webp"
+    },
+    {
+      "original": "Mountain-Winter4.jpg",
+      "thumbnail": "Mountain-Winter4.webp"
+    },
+    {
+      "original": "Mountain-Winter5.jpg",
+      "thumbnail": "Mountain-Winter5.webp"
+    },
+    {
+      "original": "Mountain-Winter6.jpg",
+      "thumbnail": "Mountain-Winter6.webp"
+    },
+    {
+      "original": "River-Fall.jpg",
+      "thumbnail": "River-Fall.webp"
+    },
+    {
+      "original": "Sea-Summer.jpg",
+      "thumbnail": "Sea-Summer.webp"
+    },
+    {
+      "original": "Sea-Summer2.jpg",
+      "thumbnail": "Sea-Summer2.webp"
+    },
+    {
+      "original": "Sky-Winter.jpg",
+      "thumbnail": "Sky-Winter.webp"
+    }
+  ]
+}
