@@ -5,6 +5,13 @@ set -e
 
 echo "Building for GitHub Pages..."
 
+# Detect OS for sed compatibility
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  SED_INPLACE="sed -i ''"
+else
+  SED_INPLACE="sed -i"
+fi
+
 # Create backup directory
 mkdir -p .build-temp
 
@@ -34,41 +41,41 @@ fi
 # Fix relative paths in manifest.json for GitHub Pages
 echo "Fixing asset paths for GitHub Pages..."
 if [ -f "out/splash-screen-app/manifest.json" ]; then
-  sed -i '' 's|"\.\/|"/splash-screen-app/|g' out/splash-screen-app/manifest.json
-  sed -i '' 's|"start_url": "/"|"start_url": "/splash-screen-app/"|g' out/splash-screen-app/manifest.json
-  sed -i '' 's|"scope": "/"|"scope": "/splash-screen-app/"|g' out/splash-screen-app/manifest.json
+  $SED_INPLACE 's|"\.\/|"/splash-screen-app/|g' out/splash-screen-app/manifest.json
+  $SED_INPLACE 's|"start_url": "/"|"start_url": "/splash-screen-app/"|g' out/splash-screen-app/manifest.json
+  $SED_INPLACE 's|"scope": "/"|"scope": "/splash-screen-app/"|g' out/splash-screen-app/manifest.json
 fi
 
 # Fix paths in HTML files
 if [ -f "out/splash-screen-app/index.html" ]; then
-  sed -i '' 's|href="/manifest\.json"|href="/splash-screen-app/manifest.json"|g' out/splash-screen-app/index.html
-  sed -i '' 's|href="/favicon\.ico"|href="/splash-screen-app/favicon.ico"|g' out/splash-screen-app/index.html
-  sed -i '' 's|href="/icon-|href="/splash-screen-app/icon-|g' out/splash-screen-app/index.html
+  $SED_INPLACE 's|href="/manifest\.json"|href="/splash-screen-app/manifest.json"|g' out/splash-screen-app/index.html
+  $SED_INPLACE 's|href="/favicon\.ico"|href="/splash-screen-app/favicon.ico"|g' out/splash-screen-app/index.html
+  $SED_INPLACE 's|href="/icon-|href="/splash-screen-app/icon-|g' out/splash-screen-app/index.html
 fi
 
 if [ -f "out/splash-screen-app/settings/index.html" ]; then
-  sed -i '' 's|href="/manifest\.json"|href="/splash-screen-app/manifest.json"|g' out/splash-screen-app/settings/index.html
-  sed -i '' 's|href="/favicon\.ico"|href="/splash-screen-app/favicon.ico"|g' out/splash-screen-app/settings/index.html
-  sed -i '' 's|href="/icon-|href="/splash-screen-app/icon-|g' out/splash-screen-app/settings/index.html
+  $SED_INPLACE 's|href="/manifest\.json"|href="/splash-screen-app/manifest.json"|g' out/splash-screen-app/settings/index.html
+  $SED_INPLACE 's|href="/favicon\.ico"|href="/splash-screen-app/favicon.ico"|g' out/splash-screen-app/settings/index.html
+  $SED_INPLACE 's|href="/icon-|href="/splash-screen-app/icon-|g' out/splash-screen-app/settings/index.html
 fi
 
 if [ -f "out/splash-screen-app/404.html" ]; then
-  sed -i '' 's|href="/manifest\.json"|href="/splash-screen-app/manifest.json"|g' out/splash-screen-app/404.html
-  sed -i '' 's|href="/favicon\.ico"|href="/splash-screen-app/favicon.ico"|g' out/splash-screen-app/404.html
-  sed -i '' 's|href="/icon-|href="/splash-screen-app/icon-|g' out/splash-screen-app/404.html
+  $SED_INPLACE 's|href="/manifest\.json"|href="/splash-screen-app/manifest.json"|g' out/splash-screen-app/404.html
+  $SED_INPLACE 's|href="/favicon\.ico"|href="/splash-screen-app/favicon.ico"|g' out/splash-screen-app/404.html
+  $SED_INPLACE 's|href="/icon-|href="/splash-screen-app/icon-|g' out/splash-screen-app/404.html
 fi
 
 # Fix paths in service worker
 if [ -f "out/splash-screen-app/sw.js" ]; then
   # Fix relative paths but keep the root paths for pages
-  sed -i '' "s|'\\./icon-|'/splash-screen-app/icon-|g" out/splash-screen-app/sw.js
-  sed -i '' "s|'\\./manifest\\.json'|'/splash-screen-app/manifest.json'|g" out/splash-screen-app/sw.js
-  sed -i '' "s|'\\./favicon\\.ico'|'/splash-screen-app/favicon.ico'|g" out/splash-screen-app/sw.js
-  sed -i '' "s|'\\./music/|'/splash-screen-app/music/|g" out/splash-screen-app/sw.js
-  sed -i '' "s|'\\./background/|'/splash-screen-app/background/|g" out/splash-screen-app/sw.js
+  $SED_INPLACE "s|'\\./icon-|'/splash-screen-app/icon-|g" out/splash-screen-app/sw.js
+  $SED_INPLACE "s|'\\./manifest\\.json'|'/splash-screen-app/manifest.json'|g" out/splash-screen-app/sw.js
+  $SED_INPLACE "s|'\\./favicon\\.ico'|'/splash-screen-app/favicon.ico'|g" out/splash-screen-app/sw.js
+  $SED_INPLACE "s|'\\./music/|'/splash-screen-app/music/|g" out/splash-screen-app/sw.js
+  $SED_INPLACE "s|'\\./background/|'/splash-screen-app/background/|g" out/splash-screen-app/sw.js
   # Update root paths for pages to include basePath
-  sed -i '' "s|'/',|'/splash-screen-app/',|g" out/splash-screen-app/sw.js
-  sed -i '' "s|'/settings'|'/splash-screen-app/settings'|g" out/splash-screen-app/sw.js
+  $SED_INPLACE "s|'/',|'/splash-screen-app/',|g" out/splash-screen-app/sw.js
+  $SED_INPLACE "s|'/settings'|'/splash-screen-app/settings'|g" out/splash-screen-app/sw.js
 fi
 
 # Restore API routes
