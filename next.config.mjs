@@ -13,12 +13,10 @@ const nextConfig = {
     unoptimized: true,
   },
   // Configuration for GitHub Pages deployment
-  ...(isProd && isGitHubPages && {
-    output: 'export',
-    trailingSlash: true,
-    basePath: '/splash-screen-app',
-    assetPrefix: '/splash-screen-app',
-  }),
+  output: isProd && isGitHubPages ? 'export' : undefined,
+  trailingSlash: isProd && isGitHubPages ? true : undefined,
+  basePath: isProd && isGitHubPages ? '/splash-screen-app' : '',
+  assetPrefix: isProd && isGitHubPages ? '/splash-screen-app' : '',
 }
 
 export default nextConfig

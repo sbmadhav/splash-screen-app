@@ -56,6 +56,7 @@ global.AudioContext = jest.fn().mockImplementation(() => ({
     frequencyBinCount: 128,
     getByteFrequencyData: jest.fn(),
     getByteTimeDomainData: jest.fn(),
+    getFloatTimeDomainData: jest.fn(),
   })),
   createMediaElementSource: jest.fn(() => ({
     connect: jest.fn(),
@@ -258,3 +259,21 @@ global.window.location = {
   ...global.window.location,
   reload: jest.fn(),
 }
+
+// Mock MessageChannel API
+global.MessageChannel = jest.fn().mockImplementation(() => ({
+  port1: {
+    postMessage: jest.fn(),
+    onmessage: null,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    close: jest.fn(),
+  },
+  port2: {
+    postMessage: jest.fn(),
+    onmessage: null,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    close: jest.fn(),
+  },
+}));

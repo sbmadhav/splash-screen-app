@@ -1,5 +1,4 @@
 import { render, waitFor } from '@testing-library/react'
-import { DynamicHead } from '@/components/dynamic-head'
 
 // Mock the static-utils module
 jest.mock('@/lib/static-utils', () => ({
@@ -22,21 +21,21 @@ describe('DynamicHead', () => {
     mockGetBasePath.mockReturnValue('')
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
     
-    // Reset the global flag by re-importing the module and setting the flag to false
-    jest.resetModules()
-    
     // Clear any existing manifest links
     const existingManifest = document.querySelector('link[rel="manifest"]')
     if (existingManifest && existingManifest.parentNode) {
       existingManifest.parentNode.removeChild(existingManifest)
     }
+
+    // Reset global flag before each test by clearing module cache
+    jest.resetModules()
   })
 
   afterEach(() => {
     consoleLogSpy.mockRestore()
   })
 
-  it('renders without crashing', () => {
+  it('renders without crashing', async () => {
     const { DynamicHead } = require('@/components/dynamic-head')
     expect(() => render(<DynamicHead />)).not.toThrow()
   })
@@ -73,7 +72,7 @@ describe('DynamicHead', () => {
     })
   })
 
-  it('handles server-side rendering gracefully', () => {
+  it('handles server-side rendering gracefully', async () => {
     // The component should handle missing document gracefully due to the typeof check
     // We can't easily test this in jsdom, so we'll just verify it renders
     const { DynamicHead } = require('@/components/dynamic-head')

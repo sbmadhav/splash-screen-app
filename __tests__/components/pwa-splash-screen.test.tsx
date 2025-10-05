@@ -52,13 +52,12 @@ describe('PWASplashScreen', () => {
     // Reset process.env
     process.env = { ...originalEnv }
     
-    // Reset service worker mock to working state
-    mockNavigator.register.mockResolvedValue(mockServiceWorkerRegistration)
-    Object.defineProperty(navigator, 'serviceWorker', {
-      writable: true,
-      configurable: true,
-      value: mockNavigator,
-    })
+    // Work with the existing global service worker mock
+    const serviceWorkerMock = navigator.serviceWorker as any;
+    if (serviceWorkerMock && serviceWorkerMock.register) {
+      serviceWorkerMock.register.mockClear();
+      serviceWorkerMock.register.mockResolvedValue(mockServiceWorkerRegistration);
+    }
     
     // Reset window location
     Object.defineProperty(window, 'location', {
@@ -107,7 +106,7 @@ describe('PWASplashScreen', () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigator.register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
+      expect((navigator.serviceWorker as any).register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
     }, { timeout: 1000 })
   })
 
@@ -123,7 +122,7 @@ describe('PWASplashScreen', () => {
     })
 
     await waitFor(() => {
-      expect(mockNavigator.register).toHaveBeenCalledWith('/sw.js')
+      expect((navigator.serviceWorker as any).register).toHaveBeenCalledWith('/sw.js')
     }, { timeout: 1000 })
   })
 
@@ -151,7 +150,8 @@ describe('PWASplashScreen', () => {
 
   it('handles service worker registration errors', async () => {
     // Mock registration failure
-    mockNavigator.register.mockRejectedValueOnce(new Error('Registration failed'))
+    const serviceWorkerMock = navigator.serviceWorker as any;
+    serviceWorkerMock.register.mockRejectedValueOnce(new Error('Registration failed'))
     
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
 
@@ -216,7 +216,7 @@ describe('PWASplashScreen', () => {
       })
 
       await waitFor(() => {
-        expect(mockNavigator.register).toHaveBeenCalledWith('/sw.js')
+        expect((navigator.serviceWorker as any).register).toHaveBeenCalledWith('/sw.js')
       })
     })
 
@@ -236,7 +236,7 @@ describe('PWASplashScreen', () => {
       })
 
       await waitFor(() => {
-        expect(mockNavigator.register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
+        expect((navigator.serviceWorker as any).register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
       })
     })
 
@@ -256,7 +256,7 @@ describe('PWASplashScreen', () => {
       })
 
       await waitFor(() => {
-        expect(mockNavigator.register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
+        expect((navigator.serviceWorker as any).register).toHaveBeenCalledWith('/splash-screen-app/sw.js')
       })
     })
 
