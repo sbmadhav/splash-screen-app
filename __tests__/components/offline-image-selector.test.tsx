@@ -47,8 +47,8 @@ describe('OfflineImageSelector', () => {
     const images = screen.getAllByRole('img')
     const firstImage = images[0]
     
-    // Should use the base path from getBasePath()
-    expect(firstImage.getAttribute('src')).toBe('/splash-screen-app/background/Beach-Summer.jpg')
+    // Should use the thumbnail WebP version with base path
+    expect(firstImage.getAttribute('src')).toBe('/splash-screen-app/background/thumbnails/Beach-Summer.webp')
   })
 
   it('calls onImageSelect when image is clicked', async () => {
@@ -88,9 +88,9 @@ describe('OfflineImageSelector', () => {
   it('renders all available offline images', () => {
     render(<OfflineImageSelector onImageSelect={mockOnImageSelect} />)
     
-    // Should render all 21 offline images (count the clickable image cards)
+    // Should render all 29 offline images (the actual count in LOCAL_IMAGES array)
     const imageCards = screen.getAllByRole('img')
-    expect(imageCards).toHaveLength(21)
+    expect(imageCards).toHaveLength(29)
   })
 
   it('handles image loading errors gracefully', () => {
@@ -125,8 +125,8 @@ describe('OfflineImageSelector', () => {
     const images = screen.getAllByRole('img')
     const firstImage = images[0]
     
-    // Should use relative path for development
-    expect(firstImage.getAttribute('src')).toBe('/background/Beach-Summer.jpg')
+    // Should use relative path for development with thumbnail WebP
+    expect(firstImage.getAttribute('src')).toBe('/background/thumbnails/Beach-Summer.webp')
   })
 
   it('applies correct theme styling', () => {

@@ -34,6 +34,16 @@ describe('PWAProvider', () => {
   const mockNavigator = {
     serviceWorker: {
       register: jest.fn().mockResolvedValue({}),
+      ready: Promise.resolve({
+        active: {
+          postMessage: jest.fn(),
+        },
+      }),
+      controller: {
+        postMessage: jest.fn(),
+      },
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
     },
   }
 

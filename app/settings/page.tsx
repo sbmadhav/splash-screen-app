@@ -13,6 +13,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { OfflineImageSelector } from "@/components/offline-image-selector"
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt"
+import { CacheManager } from "@/components/cache-manager"
 
 interface AppSettings {
   showLogo: boolean
@@ -805,6 +806,9 @@ export default function SettingsPage() {
 
         {/* PWA Install */}
         <PWAInstallPrompt theme={resolvedTheme} />
+
+        {/* Cache Management */}
+        <CacheManager theme={resolvedTheme} />
 
         {/* Save Button */}
         <div className="flex justify-end">

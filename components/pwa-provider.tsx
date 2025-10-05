@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { PWASplashScreen } from "@/components/pwa-splash-screen"
+import { CacheVersionChecker } from "@/components/cache-version-checker"
 import { debugLog } from "@/lib/debug-utils"
 
 const SPLASH_COMPLETED_KEY = 'splash-screen-completed'
@@ -71,5 +72,10 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     return <PWASplashScreen onComplete={handleSplashComplete} />
   }
 
-  return children
+  return (
+    <>
+      <CacheVersionChecker />
+      {children}
+    </>
+  )
 }

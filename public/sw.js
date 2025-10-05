@@ -1,8 +1,44 @@
-const CACHE_NAME = 'splash-app-v1';
-const STATIC_CACHE = 'splash-app-static-v1';
-const DYNAMIC_CACHE = 'splash-app-dynamic-v1';
+// Version should be updated whenever JS/CSS changes to force cache refresh
+const APP_VERSION = '1.1.0';
+const CACHE_NAME = `splash-app-v${APP_VERSION}`;
+const STATIC_CACHE = `splash-app-static-v${APP_VERSION}`;
+const DYNAMIC_CACHE = `splash-app-dynamic-v${APP_VERSION}`;
 
-// Assets to cache immediately (core assets only)
+// WebP thumbnails to cache immediately (small size, used in settings)
+const THUMBNAIL_IMAGES = [
+  './background/thumbnails/Beach-Summer.webp',
+  './background/thumbnails/Beach-Summer2.webp',
+  './background/thumbnails/City-Spring.webp',
+  './background/thumbnails/City-Winter.webp',
+  './background/thumbnails/Dessert-Summer.webp',
+  './background/thumbnails/Dessert-Winter.webp',
+  './background/thumbnails/Forrest-Summer.webp',
+  './background/thumbnails/Lake-Spring.webp',
+  './background/thumbnails/Lake-Spring2.webp',
+  './background/thumbnails/Lake-Sumer.webp',
+  './background/thumbnails/Lake-Winter.webp',
+  './background/thumbnails/Lake-Winter2.webp',
+  './background/thumbnails/Lake-Winter3.webp',
+  './background/thumbnails/Mountain-Fall.webp',
+  './background/thumbnails/Mountain-Fall2.webp',
+  './background/thumbnails/Mountain-Spring.webp',
+  './background/thumbnails/Mountain-Summer.webp',
+  './background/thumbnails/Mountain-Summer2.webp',
+  './background/thumbnails/Mountain-Summer3.webp',
+  './background/thumbnails/Mountain-Winter.webp',
+  './background/thumbnails/Mountain-Winter2.webp',
+  './background/thumbnails/Mountain-Winter3.webp',
+  './background/thumbnails/Mountain-Winter4.webp',
+  './background/thumbnails/Mountain-Winter5.webp',
+  './background/thumbnails/Mountain-Winter6.webp',
+  './background/thumbnails/River-Fall.webp',
+  './background/thumbnails/Sea-Summer.webp',
+  './background/thumbnails/Sea-Summer2.webp',
+  './background/thumbnails/Sky-Winter.webp',
+  './background/thumbnails/manifest.json'
+];
+
+// Assets to cache immediately (core assets + thumbnails)
 const STATIC_ASSETS = [
   './',
   './settings/',
@@ -15,7 +51,9 @@ const STATIC_ASSETS = [
   './icon-128x128.png',
   './icon-256x256.png',
   './icon-512x512.png',
-  './favicon.ico'
+  './favicon.ico',
+  // Include thumbnails in static cache (they're small and essential for settings)
+  ...THUMBNAIL_IMAGES
 ];
 
 // Music files to cache on-demand (lazy loading)
@@ -53,20 +91,28 @@ const BACKGROUND_IMAGES = [
   './background/Mountain-Summer2.jpg',
   './background/Mountain-Summer3.jpg',
   './background/Mountain-Winter.jpg',
-  './background/Mountain-Winter2.jpg'
+  './background/Mountain-Winter2.jpg',
+  './background/Mountain-Winter3.jpg',
+  './background/Mountain-Winter4.jpg',
+  './background/Mountain-Winter5.jpg',
+  './background/Mountain-Winter6.jpg',
+  './background/River-Fall.jpg',
+  './background/Sea-Summer.jpg',
+  './background/Sea-Summer2.jpg',
+  './background/Sky-Winter.jpg'
 ];
 
-// Install event - cache only core static assets (not music or background images)
+// Install event - cache core static assets + thumbnails immediately
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
   
   event.waitUntil(
-    // Only cache core static assets on install - music and background images will be cached on-demand
+    // Cache core static assets + thumbnails on install - full background images cached on-demand
     caches.open(STATIC_CACHE).then((cache) => {
-      console.log('[SW] Caching core static assets...');
+      console.log('[SW] Caching core static assets and WebP thumbnails...');
       return cache.addAll(STATIC_ASSETS);
     }).then(() => {
-      console.log('[SW] Core static assets cached successfully. Music and background images will be cached on-demand.');
+      console.log('[SW] Core assets and thumbnails cached successfully. Full background images will be cached on-demand.');
       self.skipWaiting();
     }).catch((error) => {
       console.error('[SW] Failed to cache static assets:', error);
@@ -109,6 +155,9 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {
     // API requests - network first, then cache
     event.respondWith(networkFirstStrategy(request));
+  } else if (url.pathname.includes('/thumbnails/')) {
+    // WebP thumbnails - cache first (already cached during install)
+    event.respondWith(cacheFirstStrategy(request));
   } else if (url.pathname.startsWith('/background/') || 
              url.pathname.includes('unsplash.com') || 
              url.pathname.includes('picsum.photos')) {
@@ -151,10 +200,12 @@ async function cacheFirstStrategy(request) {
         // Log caching of different asset types
         if (request.url.includes('/music/')) {
           console.log('[SW] Caching music file for future use:', request.url);
+        } else if (request.url.includes('/thumbnails/')) {
+          console.log('[SW] Caching WebP thumbnail for future use:', request.url);
         } else if (request.url.includes('/background/') || 
                    request.url.includes('unsplash.com') || 
                    request.url.includes('picsum.photos')) {
-          console.log('[SW] Caching background image for future use:', request.url);
+          console.log('[SW] Caching full background image for future use:', request.url);
         }
         
         cache.put(request, networkResponse.clone());
@@ -259,5 +310,68 @@ async function getCacheStatus() {
     total: totalAssets,
     cached: cachedAssets,
     progress: (cachedAssets / totalAssets) * 100
+  };
+}
+
+// Message handler for cache operations
+self.addEventListener('message', (event) => {
+  const { action } = event.data;
+  
+  switch (action) {
+    case 'CLEAR_ALL_CACHE':
+      clearAllCache().then(() => {
+        event.ports[0].postMessage({ success: true });
+      }).catch((error) => {
+        console.error('[SW] Error clearing cache:', error);
+        event.ports[0].postMessage({ success: false, error: error.message });
+      });
+      break;
+      
+    case 'GET_CACHE_STATUS':
+      getCacheStatus().then((status) => {
+        event.ports[0].postMessage({ success: true, status });
+      }).catch((error) => {
+        console.error('[SW] Error getting cache status:', error);
+        event.ports[0].postMessage({ success: false, error: error.message });
+      });
+      break;
+      
+    default:
+      console.log('[SW] Unknown action:', action);
+  }
+});
+
+// Clear all app caches
+async function clearAllCache() {
+  console.log('[SW] Clearing all caches...');
+  const cacheNames = await caches.keys();
+  
+  await Promise.all(
+    cacheNames.map(cacheName => {
+      console.log('[SW] Deleting cache:', cacheName);
+      return caches.delete(cacheName);
+    })
+  );
+  
+  console.log('[SW] All caches cleared');
+}
+
+// Get detailed cache status
+async function getCacheStatus() {
+  const cacheNames = await caches.keys();
+  const cacheInfo = [];
+  
+  for (const cacheName of cacheNames) {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    cacheInfo.push({
+      name: cacheName,
+      size: keys.length
+    });
+  }
+  
+  return {
+    caches: cacheInfo,
+    totalCaches: cacheNames.length
   };
 }

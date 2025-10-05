@@ -178,7 +178,13 @@ global.Response = jest.fn().mockImplementation((body, options) => ({
   statusText: options?.statusText || 'OK',
   headers: new Map(),
   body: body || null,
-  json: jest.fn().mockResolvedValue(body ? JSON.parse(body) : {}),
+  json: jest.fn().mockResolvedValue(() => {
+    try {
+      return body ? JSON.parse(body) : {};
+    } catch {
+      return {};
+    }
+  }),
   text: jest.fn().mockResolvedValue(body || ''),
 }))
 
@@ -211,3 +217,44 @@ jest.mock('next/server', () => ({
 process.env.UNSPLASH_ACCESS_KEY = 'test_access_key_1234'
 process.env.NEXT_PUBLIC_VERCEL_URL = 'https://test.vercel.app'
 process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = 'G-TEST123456'
+
+// Mock Service Worker
+const mockServiceWorker = {
+  register: jest.fn().mockResolvedValue({
+    active: {
+      postMessage: jest.fn(),
+    },
+    installing: null,
+    waiting: null,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  }),
+  ready: Promise.resolve({
+    active: {
+      postMessage: jest.fn(),
+    },
+    installing: null,
+    waiting: null,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  }),
+  controller: {
+    postMessage: jest.fn(),
+  },
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+}
+
+Object.defineProperty(global.navigator, 'serviceWorker', {
+  value: mockServiceWorker,
+  writable: true,
+})
+
+// Mock window.alert
+global.alert = jest.fn()
+
+// Mock window.location.reload
+global.window.location = {
+  ...global.window.location,
+  reload: jest.fn(),
+}

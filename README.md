@@ -18,8 +18,10 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 ## Performance Highlights
 
 - **⚡ Sub-Second Load Times**: Core app loads in under 1 second
-- **📦 Lazy Asset Loading**: Images and music cached only when needed
-- **🧠 Intelligent Caching**: Service worker avoids Next.js chunk conflicts
+- **�️ 99.9% Image Optimization**: WebP thumbnails reduced from 107MB to 0.1MB
+- **�📦 Lazy Asset Loading**: Images and music cached only when needed
+- **🧠 Intelligent Caching**: Service worker avoids Next.js chunk conflicts with automatic version management
+- **🔄 Smart Cache Updates**: Automatic stale cache detection prevents manual browser cache clearing
 - **💨 GitHub Pages Ready**: Optimized for static hosting with client-side APIs
 - **🎯 Progressive Enhancement**: Content visible immediately, enhancements load in background
 
@@ -78,6 +80,23 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 - **Bandwidth Friendly**: No unnecessary downloads of unused assets
 - **GitHub Pages Optimized**: Designed for optimal performance on static hosting platforms
 
+### 🖼️ WebP Image Optimization
+- **99.9% Size Reduction**: Background thumbnails optimized from 107MB to 0.1MB total
+- **WebP Format**: Ultra-fast loading optimized thumbnails for settings page
+- **Automatic Generation**: Script converts all background images to WebP thumbnails
+- **Sharp Processing**: High-quality image optimization with minimal file sizes
+- **Perfect Quality**: 150x100px thumbnails maintain visual clarity at tiny file sizes
+- **Immediate Caching**: Thumbnails cached during service worker installation for instant loading
+
+### 🔧 Cache Management System
+- **Automatic Version Detection**: Prevents stale cache issues with smart version checking
+- **Manual Cache Controls**: Settings page includes "Clear All Cache" button for user control
+- **Service Worker Messages**: Real-time communication between app and service worker
+- **Cache Status Display**: View total caches, cached items, and storage details
+- **Version Tracking**: `CACHE_VERSION` system ensures fresh content after updates
+- **Intelligent Updates**: Automatic cache refresh when app versions change
+- **User-Friendly**: No more manual browser cache clearing required
+
 ## Tech Stack
 
 - **Framework**: [Next.js 14](https://nextjs.org/) with App Router
@@ -85,10 +104,12 @@ A customizable splash-screen experience built with Next.js, designed for focus s
 - **Styling**: Tailwind CSS with custom animations
 - **UI Components**: Radix UI + shadcn/ui
 - **Audio**: Web Audio API with custom visualizations
-- **Performance**: Service Worker with intelligent lazy caching
+- **Performance**: Service Worker with intelligent lazy caching + automatic cache management
+- **Image Optimization**: Sharp for WebP conversion with 99.9% size reduction
 - **APIs**: Client-side Unsplash integration for GitHub Pages compatibility
 - **State Management**: localStorage with custom event broadcasting
 - **Build Tools**: PNPM package manager with optimized build pipeline
+- **Cache Management**: Custom cache utilities with version tracking and UI controls
 - **Testing**: Jest with React Testing Library - **[View Test Coverage](./TEST_SUMMARY.md)** (231 tests, 100% pass rate, 45.11% coverage)
 
 ## Getting Started
@@ -143,6 +164,27 @@ For secure API key management and deployment practices, see our detailed [Securi
    pnpm build
    pnpm start
    ```
+
+### Performance Scripts
+
+The project includes specialized scripts for optimization:
+
+```bash
+# Generate optimized WebP thumbnails (99.9% size reduction)
+pnpm run generate-thumbnails
+
+# Build for GitHub Pages deployment
+pnpm run build:github
+
+# Serve the built application locally
+pnpm run serve
+```
+
+**WebP Thumbnail Generation**: 
+- Converts all background images to 150x100px WebP thumbnails
+- Reduces total thumbnail size from 107MB to 0.1MB
+- Automatically generates manifest.json for the thumbnail collection
+- Essential for fast settings page loading
 
 ## Testing
 
