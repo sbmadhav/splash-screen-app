@@ -25,11 +25,16 @@ export const shouldUseLocalImages = () => {
 // Get the correct base path for assets in GitHub Pages
 export const getBasePath = () => {
   if (typeof window !== 'undefined') {
-    // In browser: check if we're on GitHub Pages or using splash-screen-app path
-    return window.location.hostname.includes('github.io') || 
-           window.location.pathname.startsWith('/splash-screen-app/')
-      ? '/splash-screen-app'
-      : ''
+    // In browser: check if we're on GitHub Pages
+    if (window.location.hostname === 'sbmadhav.github.io') {
+      return '/splash-screen-app'
+    }
+    // Or if we're already in the splash-screen-app path (for local testing)
+    if (window.location.pathname.startsWith('/splash-screen-app/')) {
+      return '/splash-screen-app'
+    }
+    // Local development
+    return ''
   }
   // Server-side: check build environment
   return (process.env.GITHUB_PAGES === 'true' && process.env.NODE_ENV === 'production')
