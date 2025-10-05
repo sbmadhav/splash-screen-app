@@ -3,6 +3,12 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { PWAProvider } from '@/components/pwa-provider'
 import { PWAInstallPrompt } from '@/components/pwa-install-prompt'
 
+// Mock the debug utility
+const mockDebugLog = jest.fn()
+jest.mock('@/lib/debug-utils', () => ({
+  debugLog: (...args: any[]) => mockDebugLog(...args)
+}))
+
 // Mock service worker
 Object.defineProperty(navigator, 'serviceWorker', {
   value: {
@@ -52,8 +58,6 @@ describe('PWA Integration Tests', () => {
   })
 
   test('should register service worker in PWA provider', async () => {
-    const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation()
-
     render(
       <PWAProvider>
         <div>Test App</div>
@@ -64,12 +68,10 @@ describe('PWA Integration Tests', () => {
       expect(navigator.serviceWorker.register).toHaveBeenCalledWith('/sw.js')
     })
 
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[PWA] Service worker registered:'),
+    expect(mockDebugLog).toHaveBeenCalledWith(
+      '[PWA] Service worker registered:',
       expect.any(Object)
     )
-
-    consoleLogSpy.mockRestore()
   })
 
   test('should handle PWA install prompt when available', async () => {

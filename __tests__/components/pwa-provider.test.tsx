@@ -1,6 +1,12 @@
 import { render, screen, waitFor, act } from '@testing-library/react'
 import { PWAProvider } from '@/components/pwa-provider'
 
+// Mock the debug utility
+const mockDebugLog = jest.fn()
+jest.mock('@/lib/debug-utils', () => ({
+  debugLog: (...args: any[]) => mockDebugLog(...args)
+}))
+
 // Mock the PWASplashScreen component
 jest.mock('@/components/pwa-splash-screen', () => ({
   PWASplashScreen: ({ onComplete }: { onComplete: () => void }) => (
@@ -293,7 +299,6 @@ describe('PWAProvider', () => {
     })
 
     it('logs successful service worker registration', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
       const mockRegistration = { scope: 'test-scope' }
       mockNavigator.serviceWorker.register.mockResolvedValueOnce(mockRegistration)
 
@@ -306,10 +311,8 @@ describe('PWAProvider', () => {
       })
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('[PWA] Service worker registered:', mockRegistration)
+        expect(mockDebugLog).toHaveBeenCalledWith('[PWA] Service worker registered:', mockRegistration)
       })
-
-      consoleSpy.mockRestore()
     })
   })
 })

@@ -1,6 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MusicPlayer } from '@/components/music-player'
 
+// Mock the debug utility
+const mockDebugLog = jest.fn()
+jest.mock('@/lib/debug-utils', () => ({
+  debugLog: (...args: any[]) => mockDebugLog(...args)
+}))
+
 // Mock HTMLAudioElement
 global.HTMLAudioElement.prototype.play = jest.fn().mockResolvedValue(undefined)
 global.HTMLAudioElement.prototype.pause = jest.fn()
@@ -69,19 +75,15 @@ describe('MusicPlayer', () => {
     // Mock fetch to fail
     global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
     
-    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
-    
     render(<MusicPlayer />)
     
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Could not preload music file'),
+      expect(mockDebugLog).toHaveBeenCalledWith(
+        '[MusicPlayer] Could not preload music file:', 
         expect.any(String),
         expect.any(Error)
       )
     })
-    
-    consoleSpy.mockRestore()
   })
 
   it('starts playing music when play button is clicked', async () => {

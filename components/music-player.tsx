@@ -45,10 +45,10 @@ export function MusicPlayer() {
       if (response.ok) {
         debugLog('[MusicPlayer] Music file available and cached:', audioUrl)
       } else {
-        console.warn('[MusicPlayer] Music file not available:', audioUrl, response.status)
+        debugLog('[MusicPlayer] Music file not available:', audioUrl, response.status)
       }
     } catch (error) {
-      console.warn('[MusicPlayer] Could not preload music file:', audioUrl, error)
+      debugLog('[MusicPlayer] Could not preload music file:', audioUrl, error)
     }
   }
 

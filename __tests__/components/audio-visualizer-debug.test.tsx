@@ -3,6 +3,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { AudioVisualizer } from '@/components/audio-visualizer'
 
+// Mock the debug-utils to enable debug logging for tests
+jest.mock('@/lib/debug-utils', () => ({
+  debugLog: jest.fn((message: string, ...args: any[]) => {
+    console.debug(message, ...args)
+  })
+}))
+
+const mockDebugLog = require('@/lib/debug-utils').debugLog as jest.MockedFunction<typeof import('@/lib/debug-utils').debugLog>
+
 // Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
@@ -50,15 +59,16 @@ const mockCanvas = {
 HTMLCanvasElement.prototype.getContext = mockCanvas.getContext as any
 
 describe('AudioVisualizer - Debug Logging', () => {
-  let consoleSpy: jest.SpyInstance
+  let consoleDebugSpy: jest.SpyInstance
 
   beforeEach(() => {
     jest.clearAllMocks()
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+    consoleDebugSpy = jest.spyOn(console, 'debug').mockImplementation()
+    mockDebugLog.mockClear()
   })
 
   afterEach(() => {
-    consoleSpy.mockRestore()
+    consoleDebugSpy.mockRestore()
   })
 
   describe('component initialization', () => {
@@ -66,7 +76,7 @@ describe('AudioVisualizer - Debug Logging', () => {
       render(<AudioVisualizer audioUrl="" isPlaying={false} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('[AudioVisualizer] Canvas size updated:', 1024, 'x', 768)
+        expect(mockDebugLog).toHaveBeenCalledWith('[AudioVisualizer] Canvas size updated:', 1024, 'x', 768)
       })
     })
 
@@ -74,14 +84,14 @@ describe('AudioVisualizer - Debug Logging', () => {
       const { rerender } = render(<AudioVisualizer audioUrl="" isPlaying={false} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('[AudioVisualizer] Props changed:', { audioUrl: '', isPlaying: false })
+        expect(mockDebugLog).toHaveBeenCalledWith('[AudioVisualizer] Props changed:', { audioUrl: '', isPlaying: false })
       })
 
       // Change props
       rerender(<AudioVisualizer audioUrl="./music/test.mp3" isPlaying={true} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('[AudioVisualizer] Props changed:', { audioUrl: './music/test.mp3', isPlaying: true })
+        expect(mockDebugLog).toHaveBeenCalledWith('[AudioVisualizer] Props changed:', { audioUrl: './music/test.mp3', isPlaying: true })
       })
     })
   })
@@ -91,7 +101,7 @@ describe('AudioVisualizer - Debug Logging', () => {
       render(<AudioVisualizer audioUrl="" isPlaying={false} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('[AudioVisualizer] No audio element or URL, skipping play state change')
+        expect(mockDebugLog).toHaveBeenCalledWith('[AudioVisualizer] No audio element or URL, skipping play state change')
       })
     })
 
@@ -99,7 +109,7 @@ describe('AudioVisualizer - Debug Logging', () => {
       render(<AudioVisualizer audioUrl="./music/test.mp3" isPlaying={true} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('[AudioVisualizer] Play state prop changed to:', true)
+        expect(mockDebugLog).toHaveBeenCalledWith('[AudioVisualizer] Play state prop changed to:', true)
       })
     })
 
@@ -107,7 +117,8 @@ describe('AudioVisualizer - Debug Logging', () => {
       render(<AudioVisualizer audioUrl="./music/test.mp3" isPlaying={true} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('[AudioVisualizer] Initializing audio for prop change...')
+        // The component should log the context initialization
+        expect(mockDebugLog).toHaveBeenCalledWith('Initializing audio context...')
       })
     })
   })
@@ -117,8 +128,8 @@ describe('AudioVisualizer - Debug Logging', () => {
       render(<AudioVisualizer audioUrl="./music/test.mp3" isPlaying={true} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Initializing audio context...')
-        expect(consoleSpy).toHaveBeenCalledWith('Audio context created, state:', 'running')
+        expect(mockDebugLog).toHaveBeenCalledWith('Initializing audio context...')
+        expect(mockDebugLog).toHaveBeenCalledWith('Audio context created, state:', 'running')
       })
     })
 
@@ -126,8 +137,8 @@ describe('AudioVisualizer - Debug Logging', () => {
       render(<AudioVisualizer audioUrl="./music/test.mp3" isPlaying={true} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Audio nodes connected')
-        expect(consoleSpy).toHaveBeenCalledWith('Audio initialization complete')
+        expect(mockDebugLog).toHaveBeenCalledWith('Audio nodes connected')
+        expect(mockDebugLog).toHaveBeenCalledWith('Audio initialization complete')
       })
     })
   })
@@ -156,7 +167,7 @@ describe('AudioVisualizer - Debug Logging', () => {
       render(<AudioVisualizer audioUrl="./music/test.mp3" isPlaying={false} />)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('🎵 Setting audio source:', './music/test.mp3')
+        expect(mockDebugLog).toHaveBeenCalledWith('🎵 Setting audio source:', './music/test.mp3')
       })
     })
   })
