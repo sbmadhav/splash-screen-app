@@ -73,11 +73,12 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-      - name: Build with Next.js
+      - name: Build with Next.js for GitHub Pages
         env:
           NEXT_PUBLIC_UNSPLASH_ACCESS_KEY: ${{ secrets.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY }}
           NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
-        run: ${{ steps.detect-package-manager.outputs.runner }} next build
+          GITHUB_PAGES: true
+        run: ${{ steps.detect-package-manager.outputs.runner }} run build:github
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

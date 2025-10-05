@@ -106,7 +106,11 @@ export function TextDisplay() {
     }
   }, [])
 
+  // Track script loading state and cleanup
   useEffect(() => {
+    let scriptElement: HTMLScriptElement | null = null
+    let currentAnimation: any = null
+
     if (settings.showText && settings.textToShow.trim() && textRef.current) {
       // Clean up any existing animations first
       if ((window as any).anime) {
@@ -115,17 +119,14 @@ export function TextDisplay() {
       }
       
       if (settings.enableHeadingAnimation) {
-        // Load and run animation
-        const script = document.createElement("script")
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"
-        script.onload = () => {
-          setTimeout(() => {
-            if ((window as any).anime && textRef.current && settings.enableHeadingAnimation) {
+        const runAnimation = () => {
+          if ((window as any).anime && textRef.current && settings.enableHeadingAnimation) {
+            try {
               const textElement = textRef.current
               const text = textElement.textContent || ""
               textElement.innerHTML = text.replace(/\S/g, "<span class='letter'>$&</span>")
 
-              ;(window as any).anime
+              currentAnimation = (window as any).anime
                 .timeline({ loop: true })
                 .add({
                   targets: ".ml12 .letter",
@@ -144,42 +145,59 @@ export function TextDisplay() {
                   duration: 1100,
                   delay: (el: any, i: number) => 100 + 30 * i,
                 })
+              
+              console.log('[text-display] Animation initialized successfully')
+            } catch (error) {
+              console.error('[text-display] Animation error:', error)
             }
-          }, 100)
+          } else {
+            console.log('[text-display] Animation skipped:', {
+              anime: !!(window as any).anime,
+              textRef: !!textRef.current,
+              enableAnimation: settings.enableHeadingAnimation
+            })
+          }
         }
 
-        // Only add script if it doesn't exist
-        if (!document.querySelector('script[src*="anime.min.js"]')) {
-          document.head.appendChild(script)
-        } else if ((window as any).anime && textRef.current) {
-          // If anime.js already loaded, run animation directly
-          setTimeout(() => {
-            if (textRef.current && settings.enableHeadingAnimation) {
-              const textElement = textRef.current
-              const text = textElement.textContent || ""
-              textElement.innerHTML = text.replace(/\S/g, "<span class='letter'>$&</span>")
-
-              ;(window as any).anime
-                .timeline({ loop: true })
-                .add({
-                  targets: ".ml12 .letter",
-                  translateX: [40, 0],
-                  translateZ: 0,
-                  opacity: [0, 1],
-                  easing: "easeOutExpo",
-                  duration: 1200,
-                  delay: (el: any, i: number) => 500 + 30 * i,
-                })
-                .add({
-                  targets: ".ml12 .letter",
-                  translateX: [0, -30],
-                  opacity: [1, 0],
-                  easing: "easeInExpo",
-                  duration: 1100,
-                  delay: (el: any, i: number) => 100 + 30 * i,
-                })
+        // Check if anime.js is already loaded
+        if ((window as any).anime) {
+          console.log('[text-display] Anime.js already loaded, running animation')
+          setTimeout(runAnimation, 100)
+        } else {
+          // Only add script if it doesn't exist
+          const existingScript = document.querySelector('script[src*="anime.min.js"]')
+          if (!existingScript) {
+            console.log('[text-display] Loading anime.js script')
+            scriptElement = document.createElement("script")
+            scriptElement.src = "https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"
+            scriptElement.onload = () => {
+              console.log('[text-display] Anime.js loaded successfully')
+              setTimeout(runAnimation, 100)
             }
-          }, 100)
+            scriptElement.onerror = (error) => {
+              console.error('[text-display] Failed to load anime.js:', error)
+            }
+            
+            // Safely append script
+            try {
+              document.head.appendChild(scriptElement)
+              console.log('[text-display] Script appended to head')
+            } catch (error) {
+              console.error('[text-display] Failed to append anime.js script:', error)
+            }
+          } else {
+            console.log('[text-display] Anime.js script exists, waiting for load')
+            // Script exists but anime might not be ready yet
+            const checkAnime = () => {
+              if ((window as any).anime) {
+                console.log('[text-display] Anime.js now available, running animation')
+                setTimeout(runAnimation, 100)
+              } else {
+                setTimeout(checkAnime, 100)
+              }
+            }
+            checkAnime()
+          }
         }
       } else {
         // Reset text content to original without spans and ensure no animation classes
@@ -187,13 +205,49 @@ export function TextDisplay() {
           textRef.current.innerHTML = settings.textToShow
           textRef.current.style.transform = ''
           textRef.current.style.opacity = '1'
-          // Remove any letter spans that might exist
+          // Safely remove any letter spans that might exist
           const letters = textRef.current.querySelectorAll('.letter')
           letters.forEach(letter => {
-            if (letter.parentNode) {
-              letter.parentNode.replaceChild(document.createTextNode(letter.textContent || ''), letter)
+            if (letter.parentNode && letter.textContent !== null) {
+              try {
+                letter.parentNode.replaceChild(document.createTextNode(letter.textContent), letter)
+              } catch (error) {
+                console.warn("Failed to replace letter span:", error)
+              }
             }
           })
+        }
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      // Clean up animations
+      if (currentAnimation) {
+        try {
+          currentAnimation.pause()
+          currentAnimation = null
+        } catch (error) {
+          console.warn("Failed to cleanup animation:", error)
+        }
+      }
+      
+      if ((window as any).anime && textRef.current) {
+        try {
+          ;(window as any).anime.remove(".ml12 .letter")
+          ;(window as any).anime.remove(textRef.current)
+        } catch (error) {
+          console.warn("Failed to remove anime targets:", error)
+        }
+      }
+
+      // Clean up script if we added it (but be very careful)
+      if (scriptElement && scriptElement.parentNode) {
+        try {
+          scriptElement.parentNode.removeChild(scriptElement)
+        } catch (error) {
+          // Script might have been removed already, ignore error
+          console.warn("Script cleanup warning:", error)
         }
       }
     }

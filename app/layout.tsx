@@ -3,11 +3,11 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Raleway } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { PWAProvider } from "@/components/pwa-provider"
 import { DynamicHead } from "@/components/dynamic-head"
 import { GoogleAnalytics } from "@/components/google-analytics"
+import { ConditionalAnalytics } from "@/components/conditional-analytics"
 import "./globals.css"
 
 const raleway = Raleway({
@@ -45,7 +45,7 @@ export default function RootLayout({
         <PWAProvider>
           <Suspense fallback={null}>{children}</Suspense>
         </PWAProvider>
-        <Analytics />
+        <ConditionalAnalytics />
       </body>
     </html>
   )
