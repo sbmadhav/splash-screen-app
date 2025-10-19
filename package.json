@@ -15,7 +15,8 @@
     "test:ci": "jest --ci --coverage --watchAll=false",
     "verify-attributions": "node scripts/verify-attributions.js",
     "attribution-template": "node scripts/verify-attributions.js template",
-    "generate-thumbnails": "node scripts/generate-thumbnails-simple.js"
+    "generate-thumbnails": "node scripts/generate-thumbnails-simple.js",
+    "optimize-images": "node scripts/optimize-images.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
