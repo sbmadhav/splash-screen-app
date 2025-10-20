@@ -11,3 +11,4 @@
 11. ✅ Add OG/Twitter cards for social sharing (COMPLETED - rich metadata in layout.tsx)
 12. ✅ Create /about route with license and attribution info (COMPLETED - comprehensive about page)
 13. ✅ SEO optimization (COMPLETED - added sitemap, robots.txt, structured data, enhanced metadata)
+14. ✅ Move controls to top right with clear labels (COMPLETED - unified ControlPanel with tooltips and responsive design)

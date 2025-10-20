@@ -7,6 +7,8 @@ import type { ImageData } from "@/types/image"
 
 interface MobileInfoButtonProps {
   imageData: ImageData | null
+  isOpen?: boolean
+  onClose?: () => void
 }
 
 interface MusicSettings {
@@ -31,8 +33,11 @@ const musicOptions = [
   { value: "rainbow-after-rain", label: "Rainbow After Rain", attribution: null },
 ]
 
-export function MobileInfoButton({ imageData }: MobileInfoButtonProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export function MobileInfoButton({ imageData, isOpen: externalIsOpen, onClose: externalOnClose }: MobileInfoButtonProps) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const resolvedIsOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const resolvedOnClose = externalOnClose || (() => setInternalIsOpen(false))
+  
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark')
   const [settings, setSettings] = useState<MusicSettings>(defaultSettings)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -139,25 +144,27 @@ export function MobileInfoButton({ imageData }: MobileInfoButtonProps) {
 
   return (
     <>
-      {/* Info Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 right-4 z-30 lg:hidden p-3 rounded-full backdrop-blur-sm transition-all duration-200 ${
-          resolvedTheme === 'dark'
-            ? 'bg-black/40 text-white hover:bg-black/60'
-            : 'bg-white/40 text-gray-900 hover:bg-white/60'
-        }`}
-      >
-        <Info className="h-5 w-5" />
-      </button>
+      {/* Info Button - Only show if not controlled externally */}
+      {externalIsOpen === undefined && (
+        <button
+          onClick={() => setInternalIsOpen(true)}
+          className={`fixed bottom-4 right-4 z-30 lg:hidden p-3 rounded-full backdrop-blur-sm transition-all duration-200 ${
+            resolvedTheme === 'dark'
+              ? 'bg-black/40 text-white hover:bg-black/60'
+              : 'bg-white/40 text-gray-900 hover:bg-white/60'
+          }`}
+        >
+          <Info className="h-5 w-5" />
+        </button>
+      )}
 
       {/* Modal Overlay */}
-      {isOpen && (
+      {resolvedIsOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
+            onClick={resolvedOnClose}
           />
           
           {/* Modal Content */}
@@ -171,7 +178,7 @@ export function MobileInfoButton({ imageData }: MobileInfoButtonProps) {
               <div className="flex items-center justify-between p-4 border-b border-gray-300/20">
                 <h3 className="font-semibold">Information</h3>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={resolvedOnClose}
                   className="p-1 rounded-full hover:bg-gray-300/20"
                 >
                   <X className="h-5 w-5" />

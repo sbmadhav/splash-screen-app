@@ -5,18 +5,29 @@ import { useBackgroundImage } from "@/hooks/use-background-image-enhanced"
 import { BackgroundImage } from "@/components/background-image"
 import { LocationDisplay } from "@/components/location-display"
 import { LoadingScreen } from "@/components/loading-screen"
-import { SettingsButton } from "@/components/settings-button"
 import { TextDisplay } from "@/components/text-display"
 import { LogoDisplay } from "@/components/logo-display"
-import { ImageRefreshButton } from "@/components/image-refresh-button"
 import { TimerDisplay } from "@/components/timer-display"
 import { MusicPlayer } from "@/components/music-player"
 import { MobileInfoButton } from "@/components/mobile-info-button"
+import { ControlPanel } from "@/components/control-panel"
 
 export default function HomePage() {
   const { imageData, loading, loadNewImageWithTransition, isTransitioning } = useBackgroundImage()
   const [currentTheme, setCurrentTheme] = useState<'light' | 'dark' | 'system'>('system')
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark')
+  const [showMobileInfo, setShowMobileInfo] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Load theme from settings
   useEffect(() => {
@@ -91,11 +102,23 @@ export default function HomePage() {
       <TextDisplay />
       <LogoDisplay />
       <TimerDisplay />
-      <ImageRefreshButton onRefresh={loadNewImageWithTransition} isTransitioning={isTransitioning} />
-      <SettingsButton />
       
-      {/* Mobile Info Button - Only shown on small screens */}
-      <MobileInfoButton imageData={imageData} />
+      {/* Unified Control Panel - Top Right */}
+      <ControlPanel 
+        onRefresh={loadNewImageWithTransition} 
+        isTransitioning={isTransitioning}
+        showInfoButton={isMobile}
+        onInfoClick={() => setShowMobileInfo(true)}
+      />
+      
+      {/* Mobile Info Modal - Only shown on small screens when triggered */}
+      {isMobile && (
+        <MobileInfoButton 
+          imageData={imageData} 
+          isOpen={showMobileInfo}
+          onClose={() => setShowMobileInfo(false)}
+        />
+      )}
     </div>
   )
 }
