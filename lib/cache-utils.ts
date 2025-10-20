@@ -1,5 +1,5 @@
 // Cache busting utility
-export const CACHE_VERSION = '1.1.0';
+export const CACHE_VERSION = '1.3.0';
 
 // Add cache busting parameter to static assets
 export const getCacheBustedUrl = (url: string): string => {

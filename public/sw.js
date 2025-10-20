@@ -1,11 +1,45 @@
 // Version should be updated whenever JS/CSS changes to force cache refresh
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.3.0'; // Bumped for lossless/near-lossless quality images
 const CACHE_NAME = `splash-app-v${APP_VERSION}`;
 const STATIC_CACHE = `splash-app-static-v${APP_VERSION}`;
 const DYNAMIC_CACHE = `splash-app-dynamic-v${APP_VERSION}`;
+const IMAGE_CACHE = `splash-app-images-v${APP_VERSION}`;
 
-// WebP thumbnails to cache immediately (small size, used in settings)
-const THUMBNAIL_IMAGES = [
+// Optimized WebP thumbnails to cache immediately (tiny, used for blur-up)
+const OPTIMIZED_THUMBNAILS = [
+  './background/optimized/thumbnail/Beach-Summer.webp',
+  './background/optimized/thumbnail/Beach-Summer2.webp',
+  './background/optimized/thumbnail/City-Spring.webp',
+  './background/optimized/thumbnail/City-Winter.webp',
+  './background/optimized/thumbnail/Dessert-Summer.webp',
+  './background/optimized/thumbnail/Dessert-Winter.webp',
+  './background/optimized/thumbnail/Forrest-Summer.webp',
+  './background/optimized/thumbnail/Lake-Spring.webp',
+  './background/optimized/thumbnail/Lake-Spring2.webp',
+  './background/optimized/thumbnail/Lake-Sumer.webp',
+  './background/optimized/thumbnail/Lake-Winter.webp',
+  './background/optimized/thumbnail/Lake-Winter2.webp',
+  './background/optimized/thumbnail/Lake-Winter3.webp',
+  './background/optimized/thumbnail/Mountain-Fall.webp',
+  './background/optimized/thumbnail/Mountain-Fall2.webp',
+  './background/optimized/thumbnail/Mountain-Spring.webp',
+  './background/optimized/thumbnail/Mountain-Summer.webp',
+  './background/optimized/thumbnail/Mountain-Summer2.webp',
+  './background/optimized/thumbnail/Mountain-Summer3.webp',
+  './background/optimized/thumbnail/Mountain-Winter.webp',
+  './background/optimized/thumbnail/Mountain-Winter2.webp',
+  './background/optimized/thumbnail/Mountain-Winter3.webp',
+  './background/optimized/thumbnail/Mountain-Winter4.webp',
+  './background/optimized/thumbnail/Mountain-Winter5.webp',
+  './background/optimized/thumbnail/Mountain-Winter6.webp',
+  './background/optimized/thumbnail/River-Fall.webp',
+  './background/optimized/thumbnail/Sea-Summer.webp',
+  './background/optimized/thumbnail/Sea-Summer2.webp',
+  './background/optimized/thumbnail/Sky-Winter.webp',
+];
+
+// Legacy thumbnails (for settings page)
+const LEGACY_THUMBNAILS = [
   './background/thumbnails/Beach-Summer.webp',
   './background/thumbnails/Beach-Summer2.webp',
   './background/thumbnails/City-Spring.webp',
@@ -38,7 +72,7 @@ const THUMBNAIL_IMAGES = [
   './background/thumbnails/manifest.json'
 ];
 
-// Assets to cache immediately (core assets + thumbnails)
+// Assets to cache immediately (core assets + optimized thumbnails)
 const STATIC_ASSETS = [
   './',
   './settings/',
@@ -52,8 +86,10 @@ const STATIC_ASSETS = [
   './icon-256x256.png',
   './icon-512x512.png',
   './favicon.ico',
-  // Include thumbnails in static cache (they're small and essential for settings)
-  ...THUMBNAIL_IMAGES
+  // Include optimized thumbnails in static cache (tiny, essential for blur-up)
+  ...OPTIMIZED_THUMBNAILS,
+  // Include legacy thumbnails for settings page
+  ...LEGACY_THUMBNAILS
 ];
 
 // Music files to cache on-demand (lazy loading)
@@ -155,14 +191,14 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {
     // API requests - network first, then cache
     event.respondWith(networkFirstStrategy(request));
-  } else if (url.pathname.includes('/thumbnails/')) {
-    // WebP thumbnails - cache first (already cached during install)
-    event.respondWith(cacheFirstStrategy(request));
+  } else if (url.pathname.includes('/optimized/') || url.pathname.includes('/thumbnails/')) {
+    // Optimized images and thumbnails - cache first (prioritized for performance)
+    event.respondWith(cacheFirstStrategy(request, IMAGE_CACHE));
   } else if (url.pathname.startsWith('/background/') || 
              url.pathname.includes('unsplash.com') || 
              url.pathname.includes('picsum.photos')) {
     // Images - cache first, then network
-    event.respondWith(cacheFirstStrategy(request));
+    event.respondWith(cacheFirstStrategy(request, IMAGE_CACHE));
   } else if (url.pathname.startsWith('/music/')) {
     // Music files - cache first
     event.respondWith(cacheFirstStrategy(request));

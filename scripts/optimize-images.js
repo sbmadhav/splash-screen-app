@@ -13,13 +13,13 @@ const sharp = require('sharp');
 const INPUT_DIR = path.join(__dirname, '..', 'public', 'background');
 const OUTPUT_DIR = path.join(__dirname, '..', 'public', 'background', 'optimized');
 
-// Image sizes to generate
+// Image sizes to generate (using near-lossless quality)
 const SIZES = [
-  { name: 'thumbnail', width: 200, height: 112, quality: 75 },  // 16:9 tiny blur placeholder
-  { name: 'small', width: 640, height: 360, quality: 80 },      // Mobile
-  { name: 'medium', width: 1280, height: 720, quality: 85 },    // Tablet/Small desktop
-  { name: 'large', width: 1920, height: 1080, quality: 90 },    // Desktop
-  { name: 'xlarge', width: 2560, height: 1440, quality: 85 },   // 2K displays
+  { name: 'thumbnail', width: 200, height: 112, quality: 80, lossless: false },  // 16:9 tiny blur placeholder
+  { name: 'small', width: 640, height: 360, quality: 95, lossless: false },      // Mobile
+  { name: 'medium', width: 1280, height: 720, quality: 98, lossless: false },    // Tablet/Small desktop
+  { name: 'large', width: 1920, height: 1080, quality: 100, lossless: true },    // Desktop - lossless
+  { name: 'xlarge', width: 2560, height: 1440, quality: 100, lossless: true },   // 2K displays - lossless
 ];
 
 // Ensure output directories exist
@@ -79,10 +79,14 @@ async function optimizeImages() {
           .resize(size.width, size.height, {
             fit: 'cover',
             position: 'center',
+            kernel: sharp.kernel.lanczos3, // Best quality scaling
           })
           .webp({
             quality: size.quality,
+            lossless: size.lossless, // Use lossless for large/xlarge
+            nearLossless: !size.lossless, // Near-lossless for others
             effort: 6, // Higher effort = better compression
+            smartSubsample: false, // Better quality at expense of file size
           })
           .toFile(outputPath);
 
