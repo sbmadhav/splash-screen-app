@@ -1,5 +1,6 @@
 # Splash Screen App
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sbmadhav/splash-screen-app)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2.16-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
