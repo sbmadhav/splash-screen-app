@@ -16,9 +16,11 @@ const raleway = Raleway({
 })
 
 export const metadata: Metadata = {
-  title: "Splash Screen App",
-  description: "For Focus, Relaxation, or Meetings, with Beautiful Backgrounds",
+  title: "Splash Screen App - Focus, Relaxation, Beautiful Backgrounds",
+  description: "A beautiful, customizable splash screen app for focus sessions, relaxation, or meetings. Features stunning seasonal backgrounds, ambient music, and Pomodoro timer.",
   generator: "v0.app",
+  keywords: ["splash screen", "focus timer", "pomodoro", "relaxation", "ambient music", "beautiful backgrounds", "productivity"],
+  authors: [{ name: "Splash Screen App Team" }],
   // manifest: "/manifest.json", // Removed - will be handled dynamically
   appleWebApp: {
     capable: true,
@@ -29,6 +31,31 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
+  },
+  // Open Graph metadata for social sharing
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://sbmadhav.github.io/splash-screen-app/',
+    title: "Splash Screen App - Focus, Relaxation, Beautiful Backgrounds",
+    description: "A beautiful, customizable splash screen app for focus sessions, relaxation, or meetings. Features stunning seasonal backgrounds, ambient music, and Pomodoro timer.",
+    siteName: "Splash Screen App",
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1920,
+        height: 1080,
+        alt: 'Splash Screen App - Beautiful Mountain Landscape',
+      },
+    ],
+  },
+  // Twitter Card metadata
+  twitter: {
+    card: 'summary_large_image',
+    title: "Splash Screen App - Focus, Relaxation, Beautiful Backgrounds",
+    description: "A beautiful, customizable splash screen app for focus sessions, relaxation, or meetings. Features stunning seasonal backgrounds, ambient music, and Pomodoro timer.",
+    images: ['/og-image.jpg'],
+    creator: '@splashscreenapp',
   },
 }
 

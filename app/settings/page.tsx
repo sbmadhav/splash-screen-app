@@ -32,6 +32,8 @@ interface AppSettings {
   theme: 'light' | 'dark' | 'system'
   offlineImageMode: boolean
   selectedOfflineImage?: string
+  autoRefreshEnabled: boolean
+  autoRefreshMinutes: number
 }
 
 const musicOptions = [
@@ -63,6 +65,8 @@ const defaultSettings: AppSettings = {
   theme: 'system',
   offlineImageMode: true, // Default to true for offline images
   selectedOfflineImage: undefined,
+  autoRefreshEnabled: false, // Default to off
+  autoRefreshMinutes: 5, // Default to 5 minutes
 }
 
 export default function SettingsPage() {
@@ -415,6 +419,52 @@ export default function SettingsPage() {
                 </div>
               )}
             </div>
+
+            {/* Auto-Refresh Settings */}
+            <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className={resolvedTheme === 'light' ? 'text-gray-700' : 'text-gray-200'}>
+                    Auto-Refresh Background
+                  </Label>
+                  <p className={`text-sm ${
+                    resolvedTheme === 'light' ? 'text-gray-500' : 'text-gray-400'
+                  }`}>Automatically change background after set interval</p>
+                </div>
+                <Switch
+                  checked={tempSettings.autoRefreshEnabled}
+                  onCheckedChange={(checked) => updateTempSetting("autoRefreshEnabled", checked)}
+                  className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-600 cursor-pointer"
+                />
+              </div>
+
+              {tempSettings.autoRefreshEnabled && (
+                <div className="space-y-2">
+                  <Label htmlFor="auto-refresh-minutes" className={resolvedTheme === 'light' ? 'text-gray-700' : 'text-gray-200'}>
+                    Refresh Interval (minutes)
+                  </Label>
+                  <Input
+                    id="auto-refresh-minutes"
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={tempSettings.autoRefreshMinutes}
+                    onChange={(e) => updateTempSetting("autoRefreshMinutes", parseInt(e.target.value) || 5)}
+                    className={cn(
+                      "cursor-text",
+                      resolvedTheme === 'light'
+                        ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                        : 'bg-gray-800 border-gray-600 text-gray-200 placeholder:text-gray-500'
+                    )}
+                  />
+                  <p className={`text-xs ${
+                    resolvedTheme === 'light' ? 'text-gray-500' : 'text-gray-500'
+                  }`}>
+                    Background will automatically refresh every {tempSettings.autoRefreshMinutes} minute{tempSettings.autoRefreshMinutes !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -650,19 +700,33 @@ export default function SettingsPage() {
               </Label>
               <p className={`text-sm ${
                 resolvedTheme === 'light' ? 'text-gray-500' : 'text-gray-400'
-              }`}>View asset sources and credits</p>
-              <Link href="/attributions">
-                <Button
-                  variant="outline"
-                  className={`w-full cursor-pointer ${resolvedTheme === 'light' 
-                    ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                    : 'border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700'
-                  }`}
-                >
-                  <Info className="h-4 w-4 mr-2" />
-                  View Attributions
-                </Button>
-              </Link>
+              }`}>View project info, licenses, and asset credits</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/about">
+                  <Button
+                    variant="outline"
+                    className={`w-full cursor-pointer ${resolvedTheme === 'light' 
+                      ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      : 'border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700'
+                    }`}
+                  >
+                    <Info className="h-4 w-4 mr-2" />
+                    About & License
+                  </Button>
+                </Link>
+                <Link href="/attributions">
+                  <Button
+                    variant="outline"
+                    className={`w-full cursor-pointer ${resolvedTheme === 'light' 
+                      ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                      : 'border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700'
+                    }`}
+                  >
+                    <Info className="h-4 w-4 mr-2" />
+                    Attributions
+                  </Button>
+                </Link>
+              </div>
             </div>
             {/* Show Text Toggle */}
             <div className="flex items-center justify-between">

@@ -36,16 +36,80 @@ const getTimeKeywords = (timeOfDay: string): string[] => {
   return keywords[timeOfDay as keyof typeof keywords] || []
 }
 
+// Local images array - matches the ones in offline-image-selector
+const LOCAL_IMAGES = [
+  { name: "Beach-Summer.jpg", title: "Sunny Beach", location: "Beach Paradise" },
+  { name: "Beach-Summer2.jpg", title: "Tropical Beach", location: "Ocean View" },
+  { name: "City-Spring.jpg", title: "Spring City", location: "Urban Landscape" },
+  { name: "City-Winter.jpg", title: "Winter City", location: "Snow-covered Streets" },
+  { name: "Dessert-Summer.jpg", title: "Desert Dunes", location: "Sahara Desert" },
+  { name: "Dessert-Winter.jpg", title: "Winter Desert", location: "Cold Desert" },
+  { name: "Forrest-Summer.jpg", title: "Summer Forest", location: "Green Woods" },
+  { name: "Lake-Spring.jpg", title: "Spring Lake", location: "Mountain Lake" },
+  { name: "Lake-Spring2.jpg", title: "Peaceful Lake", location: "Serene Waters" },
+  { name: "Lake-Sumer.jpg", title: "Summer Lake", location: "Crystal Waters" },
+  { name: "Lake-Winter.jpg", title: "Frozen Lake", location: "Winter Landscape" },
+  { name: "Lake-Winter2.jpg", title: "Ice Lake", location: "Frozen Paradise" },
+  { name: "Lake-Winter3.jpg", title: "Snow Lake", location: "Winter Wonderland" },
+  { name: "Mountain-Fall.jpg", title: "Autumn Mountains", location: "Fall Colors" },
+  { name: "Mountain-Fall2.jpg", title: "Fall Peaks", location: "Golden Mountains" },
+  { name: "Mountain-Spring.jpg", title: "Spring Mountains", location: "Fresh Peaks" },
+  { name: "Mountain-Summer.jpg", title: "Summer Mountains", location: "Sunny Peaks" },
+  { name: "Mountain-Summer2.jpg", title: "High Mountains", location: "Alpine View" },
+  { name: "Mountain-Summer3.jpg", title: "Mountain Range", location: "Scenic Vista" },
+  { name: "Mountain-Winter.jpg", title: "Snow Mountains", location: "Winter Peaks" },
+  { name: "Mountain-Winter2.jpg", title: "Snowy Range", location: "Alpine Winter" },
+  { name: "Mountain-Winter3.jpg", title: "Icy Peaks", location: "Frozen Heights" },
+  { name: "Mountain-Winter4.jpg", title: "White Mountains", location: "Snow Valley" },
+  { name: "Mountain-Winter5.jpg", title: "Arctic Peaks", location: "Polar Vista" },
+  { name: "Mountain-Winter6.jpg", title: "Glacier Mountains", location: "Ice Kingdom" },
+  { name: "River-Fall.jpg", title: "Autumn River", location: "Fall Stream" },
+  { name: "Sea-Summer.jpg", title: "Summer Sea", location: "Ocean Blue" },
+  { name: "Sea-Summer2.jpg", title: "Tropical Sea", location: "Paradise Waters" },
+  { name: "Sky-Winter.jpg", title: "Winter Sky", location: "Cloudy Horizon" }
+]
+
 export async function GET(request: NextRequest) {
   try {
     // Handle searchParams safely for static generation
     let usedImages: string[] = []
+    let offlineImageMode = false
+    
     try {
       const { searchParams } = new URL(request.url)
-      usedImages = searchParams.get("usedImages")?.split(",") || []
+      usedImages = searchParams.get("usedImages")?.split(",").filter(Boolean) || []
+      offlineImageMode = searchParams.get("offlineImageMode") === "true"
     } catch (error) {
       // Fallback for static generation
       usedImages = []
+    }
+
+    // If offline image mode is enabled, return a random local image
+    if (offlineImageMode) {
+      console.log("[v0] Offline image mode enabled, selecting local image")
+      console.log("[v0] Used images:", usedImages)
+      
+      // Filter out used images
+      const availableImages = LOCAL_IMAGES.filter(img => {
+        const imgUrl = `/background/${img.name}`
+        return !usedImages.includes(imgUrl)
+      })
+      
+      console.log("[v0] Available local images:", availableImages.length)
+      
+      // If all images have been used, reset and use all images
+      const imagesToChooseFrom = availableImages.length > 0 ? availableImages : LOCAL_IMAGES
+      
+      // Select random image
+      const selectedImage = imagesToChooseFrom[Math.floor(Math.random() * imagesToChooseFrom.length)]
+      
+      return NextResponse.json({
+        url: `/background/${selectedImage.name}`,
+        title: selectedImage.title,
+        copyright: selectedImage.title,
+        location: selectedImage.location,
+        isLocal: true,
+      })
     }
 
     const season = getCurrentSeason()

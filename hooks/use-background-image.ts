@@ -6,6 +6,10 @@ import type { ImageData } from "@/types/image"
 interface AppSettings {
   useCustomImage: boolean
   customImageUrl: string
+  offlineImageMode?: boolean
+  selectedOfflineImage?: string
+  autoRefreshMinutes?: number
+  autoRefreshEnabled?: boolean
 }
 
 export function useBackgroundImage() {
@@ -13,11 +17,19 @@ export function useBackgroundImage() {
   const [loading, setLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
-  const fetchRandomImage = async (usedImages: string[]): Promise<ImageData> => {
-    console.log("[v0] Fetching random image from server API, used images:", usedImages.length)
+  const fetchRandomImage = async (usedImages: string[], offlineImageMode: boolean = false): Promise<ImageData> => {
+    console.log("[v0] Fetching random image from server API, used images:", usedImages.length, "offline mode:", offlineImageMode)
 
     try {
-      const response = await fetch(`/api/random-image?usedImages=${usedImages.join(",")}`)
+      const params = new URLSearchParams()
+      if (usedImages.length > 0) {
+        params.append("usedImages", usedImages.join(","))
+      }
+      if (offlineImageMode) {
+        params.append("offlineImageMode", "true")
+      }
+      
+      const response = await fetch(`/api/random-image?${params.toString()}`)
 
       if (response.ok) {
         const data = await response.json()
@@ -88,17 +100,22 @@ export function useBackgroundImage() {
     console.log("[v0] Loading new image with transition...")
     
     try {
-      // Check if user has custom image enabled
+      // Check if user has custom image enabled or specific offline image selected
       const savedSettings = localStorage.getItem("appSettings")
       let useCustomImage = false
       let customImageUrl = ""
+      let offlineImageMode = false
+      let selectedOfflineImage = ""
       
       if (savedSettings) {
         const settings: AppSettings = JSON.parse(savedSettings)
         useCustomImage = settings.useCustomImage || false
         customImageUrl = settings.customImageUrl || ""
+        offlineImageMode = settings.offlineImageMode || false
+        selectedOfflineImage = settings.selectedOfflineImage || ""
       }
 
+      // Priority 1: Custom uploaded image
       if (useCustomImage && customImageUrl) {
         console.log("[v0] Using custom uploaded image")
         const customImageData = getCustomImageData(customImageUrl)
@@ -112,14 +129,33 @@ export function useBackgroundImage() {
         return
       }
 
-      // Fallback to random images
+      // Priority 2: Specific offline image selected
+      if (offlineImageMode && selectedOfflineImage) {
+        console.log("[v0] Using specific selected offline image:", selectedOfflineImage)
+        const offlineImageData = {
+          url: `/background/${selectedOfflineImage}`,
+          title: selectedOfflineImage.replace(/\.(jpg|jpeg|png)$/i, '').replace(/-/g, ' '),
+          copyright: "Local image",
+          location: null,
+          isLocal: true,
+        }
+        
+        await preloadImage(offlineImageData.url)
+        
+        setImageData(offlineImageData)
+        localStorage.setItem("lastLoadedImage", JSON.stringify(offlineImageData))
+        setIsTransitioning(false)
+        return
+      }
+
+      // Priority 3: Random images (offline or online based on settings)
       const usedImages = JSON.parse(localStorage.getItem("usedImages") || "[]")
 
       let attempts = 0
       let selectedImage = null
 
       while (attempts < 5 && !selectedImage) {
-        const candidate = await fetchRandomImage(usedImages)
+        const candidate = await fetchRandomImage(usedImages, offlineImageMode)
         if (!usedImages.includes(candidate.url)) {
           selectedImage = candidate
         }
@@ -128,7 +164,7 @@ export function useBackgroundImage() {
 
       if (!selectedImage) {
         localStorage.setItem("usedImages", JSON.stringify([]))
-        selectedImage = await fetchRandomImage([])
+        selectedImage = await fetchRandomImage([], offlineImageMode)
       }
 
       // Preload the new image before setting it
@@ -180,35 +216,55 @@ export function useBackgroundImage() {
     console.log("[v0] Loading new image...")
     
     try {
-      // Check if user has custom image enabled
+      // Check if user has custom image enabled or specific offline image selected
       const savedSettings = localStorage.getItem("appSettings")
       let useCustomImage = false
       let customImageUrl = ""
+      let offlineImageMode = false
+      let selectedOfflineImage = ""
       
       if (savedSettings) {
         const settings: AppSettings = JSON.parse(savedSettings)
         useCustomImage = settings.useCustomImage || false
         customImageUrl = settings.customImageUrl || ""
+        offlineImageMode = settings.offlineImageMode || false
+        selectedOfflineImage = settings.selectedOfflineImage || ""
       }
 
+      // Priority 1: Custom uploaded image
       if (useCustomImage && customImageUrl) {
         console.log("[v0] Using custom uploaded image")
         const customImageData = getCustomImageData(customImageUrl)
         setImageData(customImageData)
-        // Store the current image data
         localStorage.setItem("lastLoadedImage", JSON.stringify(customImageData))
         setLoading(false)
         return
       }
 
-      // Fallback to random images
+      // Priority 2: Specific offline image selected
+      if (offlineImageMode && selectedOfflineImage) {
+        console.log("[v0] Using specific selected offline image:", selectedOfflineImage)
+        const offlineImageData = {
+          url: `/background/${selectedOfflineImage}`,
+          title: selectedOfflineImage.replace(/\.(jpg|jpeg|png)$/i, '').replace(/-/g, ' '),
+          copyright: "Local image",
+          location: null,
+          isLocal: true,
+        }
+        setImageData(offlineImageData)
+        localStorage.setItem("lastLoadedImage", JSON.stringify(offlineImageData))
+        setLoading(false)
+        return
+      }
+
+      // Priority 3: Random images (offline or online based on settings)
       const usedImages = JSON.parse(localStorage.getItem("usedImages") || "[]")
 
       let attempts = 0
       let selectedImage = null
 
       while (attempts < 5 && !selectedImage) {
-        const candidate = await fetchRandomImage(usedImages)
+        const candidate = await fetchRandomImage(usedImages, offlineImageMode)
         if (!usedImages.includes(candidate.url)) {
           selectedImage = candidate
         }
@@ -217,7 +273,7 @@ export function useBackgroundImage() {
 
       if (!selectedImage) {
         localStorage.setItem("usedImages", JSON.stringify([]))
-        selectedImage = await fetchRandomImage([])
+        selectedImage = await fetchRandomImage([], offlineImageMode)
       }
 
       const newUsedImages = [...usedImages, selectedImage.url].slice(-10)
@@ -290,17 +346,31 @@ export function useBackgroundImage() {
 
     loadInitialImage()
 
-    // Listen for settings changes, but only reload if switching to/from custom images
+    // Listen for settings changes
     const handleSettingsUpdate = (event: Event) => {
       const customEvent = event as CustomEvent
-      const newSettings = customEvent.detail
-      const wasUsingCustom = localStorage.getItem("appSettings") ? 
-        JSON.parse(localStorage.getItem("appSettings") || "{}").useCustomImage : false
-      const nowUsingCustom = newSettings.useCustomImage
+      const newSettings = customEvent.detail as AppSettings
       
-      // Only reload if the custom image setting changed
-      if (wasUsingCustom !== nowUsingCustom) {
-        loadNewImage()
+      const oldSettingsStr = localStorage.getItem("appSettings") || "{}"
+      const oldSettings = JSON.parse(oldSettingsStr) as AppSettings
+      
+      // Check if any background-related settings changed
+      const customImageChanged = oldSettings.useCustomImage !== newSettings.useCustomImage || 
+                                 oldSettings.customImageUrl !== newSettings.customImageUrl
+      const offlineModeChanged = oldSettings.offlineImageMode !== newSettings.offlineImageMode
+      const selectedImageChanged = oldSettings.selectedOfflineImage !== newSettings.selectedOfflineImage
+      
+      console.log("[v0] Settings update detected:", {
+        customImageChanged,
+        offlineModeChanged,
+        selectedImageChanged,
+        newSelectedImage: newSettings.selectedOfflineImage
+      })
+      
+      // Reload image if any background setting changed
+      if (customImageChanged || offlineModeChanged || selectedImageChanged) {
+        console.log("[v0] Background settings changed, reloading image...")
+        loadNewImageWithTransition()
       }
     }
 
@@ -308,6 +378,53 @@ export function useBackgroundImage() {
 
     return () => {
       window.removeEventListener("settingsChanged", handleSettingsUpdate)
+    }
+  }, [])
+
+  // Auto-refresh timer effect
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null
+
+    const setupAutoRefresh = () => {
+      // Clear existing interval
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+
+      const savedSettings = localStorage.getItem("appSettings")
+      if (!savedSettings) return
+
+      const settings: AppSettings = JSON.parse(savedSettings)
+      const autoRefreshEnabled = settings.autoRefreshEnabled || false
+      const autoRefreshMinutes = settings.autoRefreshMinutes || 5
+
+      if (autoRefreshEnabled && autoRefreshMinutes > 0) {
+        console.log(`[v0] Setting up auto-refresh every ${autoRefreshMinutes} minutes`)
+        
+        intervalId = setInterval(() => {
+          console.log("[v0] Auto-refresh triggered")
+          loadNewImageWithTransition()
+        }, autoRefreshMinutes * 60 * 1000) // Convert minutes to milliseconds
+      } else {
+        console.log("[v0] Auto-refresh is disabled")
+      }
+    }
+
+    setupAutoRefresh()
+
+    // Re-setup auto-refresh when settings change
+    const handleSettingsChange = () => {
+      setupAutoRefresh()
+    }
+
+    window.addEventListener("settingsChanged", handleSettingsChange)
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+      window.removeEventListener("settingsChanged", handleSettingsChange)
     }
   }, [])
 

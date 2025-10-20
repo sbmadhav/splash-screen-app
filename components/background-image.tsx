@@ -63,6 +63,9 @@ export function BackgroundImage({ imageData }: BackgroundImageProps) {
 
   useEffect(() => {
     if (imageData?.url && imageData.url !== currentImageUrl) {
+      // Reset loaded state for new image to trigger fade-in animation
+      setIsLoaded(false)
+      
       const isLocalImage = imageData.url.includes('/background/') && imageData.isLocal
       
       // If this is the first image or a new local image, use progressive loading
@@ -76,6 +79,10 @@ export function BackgroundImage({ imageData }: BackgroundImageProps) {
           setShowThumbnail(true)
           debugLog("[v0] Thumbnail loaded:", thumbnail)
         }
+        thumbImg.onerror = () => {
+          debugLog("[v0] Thumbnail load failed, skipping blur effect")
+          setShowThumbnail(false)
+        }
         thumbImg.src = thumbnail
 
         // Step 2: Load full-size image in background
@@ -85,32 +92,38 @@ export function BackgroundImage({ imageData }: BackgroundImageProps) {
         const fullImg = new Image()
         fullImg.onload = () => {
           setCurrentImageUrl(optimizedUrl)
-          setIsLoaded(true)
-          // Keep thumbnail visible briefly for smooth transition
-          setTimeout(() => setShowThumbnail(false), 300)
+          // Small delay to ensure smooth transition
+          setTimeout(() => {
+            setIsLoaded(true)
+            // Keep thumbnail visible briefly for smooth transition
+            setTimeout(() => setShowThumbnail(false), 300)
+          }, 50)
           debugLog("[v0] Full image loaded:", optimizedUrl)
         }
         fullImg.onerror = () => {
           // Fallback to original image
           debugLog("[v0] Optimized image failed, using original")
           setCurrentImageUrl(imageData.url)
-          setIsLoaded(true)
-          setShowThumbnail(false)
+          setTimeout(() => {
+            setIsLoaded(true)
+            setShowThumbnail(false)
+          }, 50)
         }
         fullImg.src = optimizedUrl
       } else {
         // For external images (Unsplash), load directly
-        setIsLoaded(false)
         const img = new Image()
         
         img.onload = () => {
           setCurrentImageUrl(imageData.url)
-          setTimeout(() => setIsLoaded(true), 50)
+          // Small delay ensures smooth fade-in
+          setTimeout(() => setIsLoaded(true), 100)
           debugLog("[v0] External image loaded:", imageData.url)
         }
         img.onerror = () => {
-          setIsLoaded(true)
           debugLog("[v0] Image load error")
+          setCurrentImageUrl(imageData.url)
+          setIsLoaded(true)
         }
         img.src = imageData.url
       }
