@@ -8,6 +8,7 @@ import { PWAProvider } from "@/components/pwa-provider"
 import { DynamicHead } from "@/components/dynamic-head"
 import { GoogleAnalytics } from "@/components/google-analytics"
 import { ConditionalAnalytics } from "@/components/conditional-analytics"
+import StructuredData from "./structured-data"
 import "./globals.css"
 
 const raleway = Raleway({
@@ -138,6 +139,7 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${raleway.variable}`}>
         <GoogleAnalytics />
         <DynamicHead />
+        <StructuredData />
         <PWAProvider>
           <Suspense fallback={null}>{children}</Suspense>
         </PWAProvider>
